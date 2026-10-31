@@ -148,3 +148,20 @@ proguard/
 *.iws
 
 .idea_modules/
+
+### Project additions ###
+# Build output in any directory (the generated rules above only match the repo root)
+build/
+
+# Signing keys
+*.jks
+*.keystore
+
+# Kotlin session files
+.kotlin/
+
+# Android App Bundle
+*.aab
+
+# Claude Code local settings
+.claude/settings.local.json
