@@ -125,3 +125,4 @@ not to this document.
 - Categories, grouping, tagging.
 - Cloud backup / import through provider APIs (Google Drive, Dropbox, etc.).
 - Custom units with conversion between them (Pro).
+- Goal without a period (cumulative, e.g. "1000 books").

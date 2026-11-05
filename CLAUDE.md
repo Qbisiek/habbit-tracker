@@ -11,6 +11,13 @@ project: the goal is to practice a structured AI-assisted workflow.
   explicit approval. Do not chain skills or agents on your own.
 - Never run git commit or git push. The user reviews diffs and commits.
 - Before writing a file, briefly explain what it contains and why.
+- Interrupted sessions: when the user says they must stop or end the current
+  session (interview or any other multi-step work), by default save the
+  state to the phase's artifact file without being asked. Mark at the top of
+  the file, clearly, that the session was interrupted and the document is
+  not approved. List what was agreed (decisions, confirmed items), what is
+  still undecided, and the next steps to resume. Do not present unconfirmed
+  items as decided. Tell the user in Polish what was saved.
 
 ## Language
 - Conversation with the user: Polish.
