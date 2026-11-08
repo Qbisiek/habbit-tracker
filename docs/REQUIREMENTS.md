@@ -16,7 +16,8 @@ testing. Later: publication in Google Play for other users. iOS is a possible la
 The author currently uses "Simple time tracker" (Razeeman): it tracks time and supports
 weekly goals, but has no done / not done habits and no tracking of quitting habits.
 
-**Key quality:** easy to configure and customize.
+**Key quality:** easy to configure and customize. Minimal friction for the user:
+adding and tracking habits must be as simple and pleasant as possible.
 
 ## 2. Features
 
@@ -123,6 +124,17 @@ not to this document.
 - Dark theme.
 - Home screen widget.
 - Categories, grouping, tagging.
+- Import that merges the data from a file with the data already in the app
+  (v1: import replaces all data, after a warning and confirmation).
 - Cloud backup / import through provider APIs (Google Drive, Dropbox, etc.).
 - Custom units with conversion between them (Pro).
+- Conversion between built-in units of the same kind (e.g. ml and l): converting
+  existing history when the unit of a habit is changed, and showing statistics
+  in a unit other than the habit's own (v1: changing the unit only relabels
+  the values, with a warning).
 - Goal without a period (cumulative, e.g. "1000 books").
+- User setting for the first day of the week (v1: always Monday).
+- Statistics option: let the user choose whether the goal completion percentage
+  of build habits is capped at 100% (v1: always capped).
+- Settings screen with a user choice of the default start screen (v1: always the
+  Day screen).

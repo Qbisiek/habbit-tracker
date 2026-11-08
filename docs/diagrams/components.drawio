@@ -19,7 +19,7 @@
         <mxCell id="u305NUy0W9hrtNy8YMIr-35" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="Persistence&#xa;(stored representation, mapping to entities)" vertex="1">
           <mxGeometry height="70" width="190" x="260" y="340" as="geometry" />
         </mxCell>
-        <mxCell id="u305NUy0W9hrtNy8YMIr-36" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="Platform services&#xa;(timer service and notification, clock, file access)" vertex="1">
+        <mxCell id="u305NUy0W9hrtNy8YMIr-36" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="Platform services&#xa;(timer notification, clock, file access and JSON for export / import)" vertex="1">
           <mxGeometry height="70" width="190" x="260" y="450" as="geometry" />
         </mxCell>
         <mxCell id="u305NUy0W9hrtNy8YMIr-37" edge="1" parent="1" source="u305NUy0W9hrtNy8YMIr-32" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;" target="u305NUy0W9hrtNy8YMIr-33" value="renders state,&#xa;sends actions">
