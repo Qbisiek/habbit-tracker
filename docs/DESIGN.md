@@ -1,8 +1,80 @@
 # Design: Habit Tracker (working title)
 
-> **STATUS: APPROVED by the user (2026-11-08).** Basis for the plan phase.
-> Decisions 1-39 are in section 9. Open questions that remain are carried
-> to the plan (section 10).
+> **DESIGN PAUSED (2026-11-13).** On 2026-11-13 the user decided to move the
+> user-visible behavior (scenarios, goal rules, statistics rules, import) into
+> `docs/REQUIREMENTS.md` section 7 and to change the goal model (a goal is only a
+> definition; changing it archives it; statistics per goal). This document is
+> therefore partly outdated (sections 4, 5, 6 and 8, Decisions 15, 31, 42, 52, 62,
+> 67-69). Do not work on it until the requirements are reviewed and approved; then
+> triage it as described in the status of `docs/REQUIREMENTS.md`. The status
+> below dates from 2026-11-11.
+>
+> **STATUS: SESSION INTERRUPTED, DOCUMENT NOT APPROVED (2026-11-11).**
+> The user had to end the session during the review of the revised design.
+> The user agreed to each change below in conversation, but has not approved
+> the document as a whole. The decisions log is `docs/DESIGN-DECISIONS.md`
+> (Decisions 52-72 are new in this revision).
+>
+> **Agreed and applied in this session** (Decisions 68-72 and the text of
+> sections 3-7): the form lists all goals valid today or pending and the user
+> edits the one tapped; after *Wait* the new goal starts by default at the end
+> of the old one (but see B1 below); mode and N are derived (mode = has an
+> end), changing the end needs no choice; manual Duration entry start <= now;
+> Android-created objects get dependencies through interfaces implemented by
+> Application; single writes in the Entries and Running timers ports; goals
+> counted only if they contain a day of the habit's life; no average per day
+> without days of life; overlap read of entries; full import validation
+> (scenarios J1-J5); different symbol for Binary quit; indicator marks for
+> abandoned and cut-off periods; R-VALID-HABIT; "days left". Outdated
+> decisions are replaced in place, not kept as history.
+>
+> **Still open** (report `docs/reviews/2026-11-11-docs-review-3.md`, all
+> findings open, none applied): B1 (start after *Wait* when the period length
+> changes), I1 (two goals without an end), I2-I7 and M1-M10, structure
+> proposals. The questions P1-P4 in the report await the user's decision.
+>
+> **To resume:** decide P1-P4, go through I4-I7 (the user decides each edge
+> case of I7), apply the minor findings, then run docs-reviewer again and ask
+> the user for approval. The plan phase must not start before that.
+>
+> **Still to do before approval:** resolve or defer the open findings of the
+> latest docs-reviewer report, get the user's approval. The plan phase must
+> not start before that. Open questions that remain are carried to the plan
+> (section 10).
+
+## Summary and map
+
+- **What:** Android app (Kotlin, Jetpack Compose, minimum API 33), fully
+  offline, local Room storage, no analytics (section 2).
+- **Architecture (section 3):** `GUI -> Presentation -> Domain <-
+  Persistence`, `Domain <- Platform services`; App wires everything. Domain
+  is a pure Kotlin/JVM Gradle module and owns the ports.
+- **Data (section 4):** Habit (name, direction Build / Quit, creation day, archiving day) has
+  one Measurement (Binary, Numeric with unit, or Duration), optional Goals
+  (separate entities: target, period day / week / month / quarter / year,
+  validity from / to), Entries (a moment in
+  time and a value; Binary: a date) and at most one RunningTimer (a start instant).
+- **Rules (section 5, tagged `R-...`):** week starts Monday; a day is a
+  calendar day in the device time zone; period result, "achieved" and the
+  completion percentage per type and direction; one goal runs at a time in
+  v1, and changing it offers three options (abandon, delete the unfinished
+  period, wait); a new goal starts at the current period of its length (after
+  "wait", at the end of the old goal) unless the user picks another date; statistics give one line per period length,
+  count the unfinished period with its result so far (marked provisional)
+  and only periods that start inside the range and not after today;
+  time-dependent screens refresh through the Clock port. The goal and
+  statistics rules are specified by the scenario table at the end of section 5.
+- **Screens (section 6):** three tabs: Day (selected date, one row per
+  habit, entries edited in a bottom sheet), Habits (one create / edit
+  form), Statistics (common date range, one card per habit).
+- **Cross-cutting (section 7):** Polish and English via text identifiers;
+  versioned JSON export / import that replaces all data; Auto Backup off.
+- **Testing (section 8):** Domain and Presentation as JVM tests with fakes;
+  the success criteria are checked by a replay test of the three-habit week.
+- **Where things are:** decisions in `docs/DESIGN-DECISIONS.md` (cited as
+  "Decision N"); requirements in `docs/REQUIREMENTS.md` (IDs `REQ-...`);
+  rules in section 5 (IDs `R-...`); open questions in section 10; diagram in
+  `docs/diagrams/components.drawio`.
 
 ## 1. Overview
 
@@ -12,8 +84,8 @@ from Must/Should features and constraints):
 1. Habit model: measurement type and direction.
 2. Entries: any day, editing past days.
 3. Timer: survives closing the app; ongoing notification with Stop (Should).
-4. Goals and periods: fixed day/week/month, evaluation per type and
-   direction, goal completion percentage.
+4. Goals and periods: fixed day/week/month/quarter/year, repeating or for a
+   number of periods, evaluation per type and direction, goal completion percentage.
 5. Statistics over a user-chosen date range.
 6. Habit management: create, edit, archive, delete.
 7. Units: built-in and custom label (Should).
@@ -73,7 +145,7 @@ by packages.
 | Domain | Entities and business rules: periods, goal evaluation, statistics, timer logic (pure state based on a start instant), export/import rules. Defines the interfaces (ports) for storage, clock, etc. No framework dependencies. |
 | Persistence | Implements the storage ports defined by Domain. Has its own stored representation and maps it to domain entities. |
 | Platform services | Adapters for system features: timer notification (no background service, Decision 21), system clock, file access and JSON serialization for export/import (Decisions 30, 36). |
-| Presentation | Screen state (everything computed; texts as identifiers and raw values, resolved and formatted by the GUI, Decision 22) and handling of user actions on a screen (calls Domain, updates state, decides navigation). Pure Kotlin, no Android and no widgets. No business rules. Depends on Domain. |
+| Presentation | Screen state (everything computed; texts as identifiers and raw values in simple types or types owned by Presentation, never Domain types, resolved and formatted by the GUI, Decisions 22 and 61) and handling of user actions on a screen (calls Domain, updates state, decides navigation). Pure Kotlin, no Android and no widgets. No business rules. Depends on Domain. |
 | GUI | Compose widgets and navigation; renders state from Presentation and forwards user actions to it, without making decisions. Contains the thin androidx `ViewModel` holders. Replaceable without changes to Domain and Presentation. |
 | App (composition root) | Wires everything: creates the port implementations and connects them to Domain and Presentation. |
 
@@ -81,15 +153,65 @@ by packages.
 `Domain <- Platform services`. Domain depends on nothing. App knows all
 components; no component knows App.
 
+**Objects created by Android (Decision 71):** Android creates the Activity
+and the timer BroadcastReceiver, so they cannot get dependencies through a
+constructor. Each of the two components that contain them (GUI, Platform
+services) defines a small interface listing what it needs (for GUI, the
+factories of Presentation objects; for the receiver, the Data operations and
+Timer notification ports). The Application class in App implements both
+interfaces, and the Activity and the receiver reach it by casting the
+application context to the interface. The dependency still points from App to
+the components, never the other way.
+
 **How the design principles are met:**
 1. Business logic free of frameworks: Domain is a separate pure Kotlin/JVM
    module; storage and platform features are reached through ports defined
    by Domain and implemented in Persistence and Platform services.
 2. Business logic separated from the GUI: GUI depends on Presentation only
-   (state in, actions out); Presentation and Domain know nothing about
-   Compose. Replacing the GUI does not touch them.
+   (state in, actions out; the state contains no Domain types, Decision 61);
+   Presentation and Domain know nothing about Compose. Replacing the GUI does
+   not touch them.
 3. Patterns: see section 9 (MVVM with unidirectional state, Ports and
-   Adapters, Repository, sealed hierarchy).
+   Adapters, Repository, sealed hierarchy, manual dependency injection).
+
+**Ports (Decisions 48, 59):** interfaces defined by Domain, implemented outside it.
+
+| Port | Implemented by | Purpose |
+|---|---|---|
+| Habits | Persistence | Reads of habits, and restoring an archived habit. All other writes of habits are Data operations. |
+| Entries | Persistence | Single-entry writes: add, edit, delete (also the Binary toggle). Entries of a habit, read by date range (never "all entries", Decision 54). A read returns every entry whose time span overlaps the range (calendar days in the device time zone), not only entries that start in it (scenario G8). Also the date of the habit's earliest entry (for R-STATS-HABIT-LIFE). Export reads from that date to today, range by range. |
+| Goals | Persistence | Goals of a habit with their validity (Decision 52). Reads only: every goal write is part of "save habit". |
+| Running timers | Persistence | Start instants of running timers (the source of truth, Decision 18). Single writes: start a timer, discard it without an entry. Stopping is a Data operation. |
+| Data operations | Persistence | Composite operations that touch several of the ports above, each all-or-nothing (Decision 59). |
+| Clock | Platform services | Current instant and device time zone; a tick stream that ticks while it has a subscriber (Presentation subscribes only while a timer runs); signals of a day or time zone change (R-TIME-REFRESH, Decision 58). |
+| Timer notification | Platform services | Show and remove the notification with Stop; synchronize notifications with running timers (R-NOTIFICATION-SYNC). |
+| Backup file | Platform services | Read and write the export file, which is identified by an opaque identifier (Decision 60): JSON parsing and serialization, mapping between file classes and domain entities with the format version (section 7). |
+
+Rules for all storage ports:
+- **Reads return `Flow`, writes are `suspend`.** Screens refresh by themselves
+  when data change. Domain therefore depends on `kotlinx.coroutines`, and on
+  nothing else outside the Kotlin standard library. Passing time is not a
+  data change: it reaches screens through the Clock port (R-TIME-REFRESH).
+- **Composite operations are the methods of the Data operations port
+  (Decision 59), named after business actions; each runs in one database
+  transaction.** They are all-or-nothing, so a crash in the middle leaves
+  the previous state: for the timer, it keeps running and Stop can be
+  tapped again. The operations are:
+  - stop timer (create an entry and delete the running timer),
+  - archive habit (stop its timer as above and set the archiving day),
+  - delete habit (the habit with its entries, goals and running timer),
+  - import (replace all data),
+  - save habit (the habit and its goal changes from the form: create, edit,
+    and the end, removal or creation of goals by R-GOAL-CHANGE, all in one
+    operation).
+
+  **Domain computes the resulting entities** (the goals after a change,
+  the length of a stopped timer, the validations); a Data operations method
+  only writes them in one transaction. Domain does not know the term
+  "transaction". Timer notifications are not
+  part of the transaction: Domain updates them through the Timer
+  notification port after the operation, and a mismatch left by a crash is
+  repaired by R-NOTIFICATION-SYNC.
 
 **Note on iOS:** pure Kotlin Presentation and Domain make a later move
 easier, but sharing them with iOS would need Kotlin Multiplatform and a
@@ -98,34 +220,40 @@ the choices only do not rule it out.
 
 ## 4. Data model
 
-Level 1 (confirmed): names and relations only; attributes and invariants are Level 2.
+Level 1 (confirmed on 2026-11-08, Goal revised on 2026-11-11, Decision 52): names and relations only; attributes and invariants are Level 2.
 
 - **Habit**: a pure definition of the activity. Identity, name, direction
-  (Build / Quit), archived flag (yes / no). Direction is the habit's
+  (Build / Quit), creation day, archiving day (empty while the habit is
+  not archived; Decision 43). Direction is the habit's
   intent and exists even without a goal. It is not part of the goal.
 - **Measurement**: how the habit is measured. A closed (`sealed`) set of
   variants: Binary, Numeric (with a unit), Duration. Exactly one per habit.
   The unit belongs to the Numeric variant, not to the Habit. A unit is
   data, not a type: either a built-in one (identifier, name from string
   resources) or a custom one (text label). Details are Level 2.
-- **Goal**: optional (a habit may exist without any goal). Target value and
-  period (day / week / month). Separate from Habit, so changing a goal does
-  not change the habit definition. The comparison ("at least" / "at most")
-  is derived from the habit's direction. The period is a separate attribute
-  so a goal without a period can be added later (see Decision 7).
+- **Goal**: optional (a habit may exist without any goal). A separate
+  entity, so changing a goal does not change the habit definition: a
+  reference to the habit, a target value, a period (day / week / month /
+  quarter / year), the first day of its validity and an optional end of its
+  validity (Decision 52). No goal versions and no series identifier. The
+  comparison ("at least" / "at most") comes from the habit's direction, not
+  from the goal. The period is a separate attribute so a goal without a
+  period can be added later (see Decision 7).
 - **Entry**: a recorded value for a habit at a moment in time (date and
-  time, not only a day). Its meaning comes from the habit's Measurement.
+  time, not only a day; a Binary entry holds a date, Decision 44). Its
+  meaning comes from the habit's Measurement.
 - **RunningTimer**: a habit plus the instant the timer was started.
 
-Relations: Habit 1 - 1 Measurement; Habit 1 - 0..n Goal (versions, see
-below); Habit 1 - 0..n Entry; Habit 1 - 0..1 RunningTimer (several timers
-may run at once, at most one per habit; Decision 18).
+Relations: Habit 1 - 1 Measurement; Habit 1 - 0..n Goal (one runs at a time
+in v1; see INV-ONE-OPEN-GOAL and INV-GOAL-NO-SHARED-PERIOD); Habit 1 - 0..n Entry; Habit 1 - 0..1 RunningTimer
+(several timers may run at once, at most one per habit; Decision 18).
 
-Level 2 (business-relevant attributes and invariants, partial):
-- **Habit**: direction is immutable after creation. Name is editable.
+Level 2 (business-relevant attributes and invariants; invariants and validations have IDs):
+- **Habit** (INV-DIRECTION-IMMUTABLE): direction is immutable after creation. Name is editable.
   Archived habits keep entries and statistics; deleting removes the habit
-  with its entries and goals (Decision 17).
-- **Measurement**: the type cannot change once the habit has its first
+  with its entries and goals (Decision 17). Archiving sets the archiving
+  day; restoring clears it.
+- **Measurement** (INV-TYPE-LOCKED): the type cannot change once the habit has its first
   entry. For Numeric the unit is a label on the habit; entries hold plain
   numbers. Changing the unit relabels all values, without conversion
   (Decision 17). Numeric also has an optional step: the amount added by
@@ -137,16 +265,57 @@ Level 2 (business-relevant attributes and invariants, partial):
     split per day is computed by Domain, not stored (Decision 12). Several
     per day.
   - Numeric: a value; several per day, summed.
-  - Binary: at most one per day (invariant); presence means "occurred",
-    absence means "did not occur" (Decision 14).
-  - The day of an entry is a calendar day in the device time zone
-    (Decision 13).
-- **Goal**: a target value, a period (day / week / month) and the instant
-  from which this version applies. A change creates a new version that
-  applies from the start of the current period; earlier periods keep the
-  goal they had (Decision 15). Versions are an internal detail: for the
-  user, changing a goal is just editing its value on the same habit (same
-  identity, name and entries; no new habit is created, Decision 28).
+  - Binary: stores a local date, not an instant (Decision 44); at most one
+    per day (INV-BINARY-ONE-PER-DAY); presence means "occurred", absence means "did not
+    occur" (Decision 14).
+  - The day of a Duration or Numeric entry is a calendar day in the device
+    time zone (Decision 13).
+- **Goal** (Decision 52):
+  - INV-ONE-OPEN-GOAL: at most one goal per habit has no end of validity.
+  - INV-GOAL-NO-SHARED-PERIOD: two goals of one habit with the same period
+    length never contain days of the same period (so one line of
+    statistics never counts a period twice). Goals of different period
+    lengths may overlap in time.
+  - INV-GOAL-BOUNDARIES: the first day lies on the first day of a period of
+    the goal's own length, and the end of validity is after the first day (an
+    abandoned goal may end inside a period, R-GOAL-VALIDITY).
+  - Mode and N (Decision 69) are not stored: the *mode* is whether the goal
+    has an end ("repeat" = no end, "N periods" = an end), and *N* is the
+    number of periods from the first day to the end. A goal whose end is not
+    on a period boundary was abandoned; it has no N and the form shows it
+    as "ended on X", read-only.
+  - All three are checked in Domain, also on import (section 7), and are v1
+    invariants, so parallel goals can be allowed later (Decision 67).
+  - The first day and the end of validity are calendar days, so no instant
+    or time zone is involved. How a goal starts, repeats, changes and ends is
+    defined by R-GOAL-VALIDITY and R-GOAL-CHANGE in section 5. For the user, changing a
+  goal is just editing it on the same habit (same identity, name and entries;
+  no new habit is created, Decision 28); the end of the old goal and the
+  start of the new one are internal.
+- **Validation (Decisions 51, 65):**
+  - **R-VALID-GOAL:** the target is Build > 0; Quit >= 0 (a limit of 0 is
+    allowed). A Binary target is a whole number of days; it cannot exceed the
+    largest number of days its period can have (1 for a day, 7 for a week, 31
+    for a month, 92 for a quarter, 366 for a year). A target above the length
+    of a shorter period (e.g. 31 in February) is unreachable in that period;
+    this is accepted in v1 (Decision 65). A Duration target has a precision
+    of one second, is entered as hours, minutes and seconds (no days), and a
+    daily goal cannot exceed 24 h. The number of periods of a goal for N
+    periods is a whole number >= 1 (Decision 53).
+  - **R-VALID-ENTRY:** a manual Duration entry is entered as a start and an
+    end (date and time); its length is their difference, with a precision of
+    one second, and must be > 0 (the end is after the start). The end may
+    lie in the future (Decision 63); the app may show an informational
+    notice, but does not block it. The start cannot lie in the future
+    (start <= now, Decision 70), so a range read never misses an entry. A
+    Numeric value is > 0 (checked after rounding to 3 decimal places,
+    R-EXACT-VALUES). Entries cannot be negative.
+  - **R-VALID-HABIT:** the name of a habit is not empty after trimming
+    white space. Duplicate names are allowed; habits with equal names are
+    ordered by creation day (Decision 72).
+  - **R-VALID-TIMER-STOP:** stopping a timer whose computed length is not
+    positive (the device clock was moved back before the start instant)
+    creates no entry. The app shows a message and the timer keeps running.
 
 **Built-in units (Decision 37):** each has an identifier, a name from
 string resources (PL / EN) and a default "+" step. The identifiers and
@@ -173,50 +342,213 @@ for later").
 
 ## 5. Behavior and rules
 
-- **Week start:** Monday. The first day of the week is a parameter of the
+Rules are grouped by topic; the IDs are stable. The scenario table at the end
+of this section specifies the goal and statistics rules by examples.
+Validations and invariants (`R-VALID-*`, `INV-*`) are in section 4.
+
+**Rule index**
+
+| ID | Rule in one sentence | Decisions | Scenarios |
+|---|---|---|---|
+| R-WEEK-START | The week starts on Monday; the first day is a parameter. | 11 | |
+| R-PERIODS | Goal periods are calendar day, week, month, quarter, year. | 53 | |
+| R-GOAL-VALIDITY | A goal is valid from the first day of a period, repeating or for N periods. | 52, 53, 67 | B8, B9, D1-D3 |
+| R-GOAL-CHANGE | One goal at a time; changing it offers abandon, delete the unfinished period, wait. | 15, 52, 67, 68, 69 | B1-B14 |
+| R-PERIOD-RESULT | Result of a period per measurement type. | 16 | A1-A6 |
+| R-ACHIEVED | Build: result >= target. Quit: result <= target. | 16 | A1-A6 |
+| R-PERCENT | Completion percentage, capped, truncated for display. | 16, 64 | A6 |
+| R-EXACT-VALUES | Exact decimals, three places, no floating point. | 46, 64 | A6 |
+| R-DAY | A day is a calendar day in the device time zone. | 12, 13, 63 | G1, G2, G5 |
+| R-ENTRY-DATE | Entries apply to the selected day; no future dates; times of entries. | 40, 44, 50 | G6 |
+| R-DAY-VALUE | Value of a day, including the running timer. | 45, 56 | G1, G4 |
+| R-INDICATOR-PERIOD | The indicator shows the period of the selected date; abandoned and cut-off periods. | 41, 50 | |
+| R-TIME-REFRESH | Passing time reaches screens through the Clock port. | 58 | |
+| R-TIMERS | Several timers, one per habit; a timer is a start instant. | 18 | G1-G4 |
+| R-TIMER-ANDROID | No background service; one notification per timer with Stop. | 21, 32 | |
+| R-TIMER-HABIT-CHANGE | Archiving stops a timer, deleting discards it. | 51 | G7 |
+| R-TIMER-PERMISSION | Notification permission at the first timer start; dismissal. | 47, 57 | H1, H3 |
+| R-NOTIFICATION-SYNC | Notifications follow running timers; one idempotent operation. | 57 | H1, H2 |
+| R-STATS-UNFINISHED | The unfinished period counts, marked provisional; days left. | 41 | E1, E2 |
+| R-STATS-RANGE | Which goal periods count in a range. | 20, 41, 55 | E1-E7, E11 |
+| R-STATS-GOALS | One statistics line per period length; abandoned periods. | 52, 62, 67 | E8-E10 |
+| R-STATS-HABIT-LIFE | Statistics follow the life of the habit; cut-off period. | 43 | F1, F2, E11 |
+| R-VALID-GOAL | Limits of a goal target and of the number of periods. | 51, 53, 65 | I1-I3, J2 |
+| R-VALID-ENTRY | Manual Duration entry: start <= now, length > 0; Numeric value > 0. | 51, 63, 70 | J2 |
+| R-VALID-TIMER-STOP | A timer with a non-positive length creates no entry. | 51 | G3 |
+| R-VALID-HABIT | A habit name is not empty (duplicates allowed). | 72 | |
+| INV-* | Invariants of Habit, Measurement, Entry and Goal. | 14, 17, 44, 52, 67 | J1-J5 |
+
+The rules R-VALID-*, INV-* are defined in section 4, not in 5.
+
+### 5.1 Periods and goals
+
+- **R-WEEK-START: Week start:** Monday. The first day of the week is a parameter of the
   period calculation, not a constant hard-coded in the rules, so a user
   setting can be added later without changing the rules (Decision 11).
   Day and month boundaries need no decision.
 
-- **Day boundary (Decision 13):** a day is a calendar day in the device
+- **R-PERIODS: Goal periods (Decision 53):** calendar periods in the device
+  time zone: a day; a week (Monday to Sunday, R-WEEK-START); a month; a
+  quarter (January-March, April-June, July-September, October-December); a
+  year (a calendar year).
+
+- **R-GOAL-VALIDITY: Goal validity and repeating (Decisions 52, 53, 67):** a
+  goal is valid from its first day up to its end of validity (exclusive), or
+  without an end. The first day is always the first day of a period of the
+  goal's own length: the user picks a date, and the goal starts at the
+  beginning of the period that contains it. The default is the current period
+  of the goal's length (today, this week, this month, this quarter, this
+  year); an earlier date (to count retrospectively) or a later one (a
+  pending goal) is allowed. The GUI must show the calendar period that the
+  chosen date selects (e.g. "Week 9-15 Nov 2026"), so the user sees that goals
+  follow the calendar. Mode "repeat" (the default): no end; the goal applies
+  to every period from its first day, so periods repeat automatically (they
+  are derived, not stored). Mode "N periods": the end is the first day of
+  the period after the N-th period, counted from the period that contains
+  the first day (e.g. 30 days, or 8 weeks); the goal ends there and nothing
+  repeats. The periods of a goal are the periods that contain a day of its
+  validity. They are evaluated whole, so a weekly goal created on a Tuesday
+  also counts that week's Monday (scenario D1). The only validity that ends
+  inside a period is an abandoned goal (R-GOAL-CHANGE); its last period is
+  "abandoned". Invariants: INV-ONE-OPEN-GOAL, INV-GOAL-NO-SHARED-PERIOD.
+
+- **R-GOAL-CHANGE: Goal change (Decisions 15, 52, 67):** v1 runs one goal at
+  a time (parallel goals are in "Ideas for later"). The form lists every
+  goal that is valid today or pending (Decision 68); the user edits the one
+  they tap. Goals that have already ended are not listed. If there is
+  none, the goal section is off, and enabling it creates a new goal; ended
+  goals are never deleted by the app. Saving the form changes goals only
+  when the target, the period or the end (mode, number of periods) changed
+  (renaming the habit touches no goal).
+  - **Change that needs a choice.** Changing the target or the period, or
+    switching the goal off, asks the user to choose one of three
+    options (none preselected):
+    - *Abandon* (stop tracking): the goal's validity ends after today. Its
+      completed periods stay; its current period is "abandoned" (unless
+      today is its last day) and entries after today do not affect it.
+    - *Delete the unfinished period*: the goal ends on the first day of its
+      current period; completed periods stay. A goal with no completed period
+      is removed (no empty record is left).
+    - *Wait*: the goal finishes its current period and does not repeat
+      further (in N-periods mode the end is the earlier of the existing end
+      and the end of the current period); the new goal starts after it
+      (Decision 68: by default exactly at that end, also when the period
+      length changes).
+    Switching off offers the same three options without a new goal.
+  - **Start of the new goal.** R-GOAL-VALIDITY applies (default: the current
+    period of its length; after *Wait* the end of the old goal; the user may
+    pick another date). The date is
+    limited by INV-GOAL-NO-SHARED-PERIOD: it cannot select a period that
+    contains a day of a goal of the same length, so with the same length the
+    default is the current period after *Delete* and the next period after
+    *Abandon* and *Wait*. Goals of different lengths may overlap; their
+    common days are counted in each of their lines (R-STATS-GOALS). The GUI
+    offers only valid dates.
+  - **Pending goal.** A goal that has not started yet has no history: it is
+    edited in place or deleted, with no choice.
+  - **End alone (Decision 69).** Changing only N, or switching between
+    "repeat" and "N periods", moves or removes the end of validity, with no
+    choice. N cannot be below the number of periods already started, and an
+    end that would make the goal share a period with another goal of the same
+    length (INV-GOAL-NO-SHARED-PERIOD) is not offered.
+  - Periods of the old goal before its end keep their goal and result.
+    Percentage and "achieved" are always computed, never stored.
+    Examples: scenarios B1-B15.
+
+- **R-PERIOD-RESULT: Period result (Decision 16):** Duration: total length attributed to the
+  days of the period. Numeric: sum of entry values. Binary: number of days
+  with an entry.
+
+- **R-ACHIEVED: Achieved (Decision 16):** Build: result >= target. Quit: result <=
+  target (the target may be 0).
+
+- **R-PERCENT: Completion percentage (Decisions 16, 64):** Build: result / target, capped at
+  100% (the cap is a parameter in Domain, always on in v1). Quit: 100% when
+  the limit is kept, otherwise target / result (0% when the target is 0
+  and the result is above 0; limit 3 and result 5 give 60%). A period is
+  achieved exactly when its capped percentage is 100%. For display the
+  percentage is truncated down to a whole percent and 100% is shown only
+  for an achieved period (99.6% is shown as 99%).
+
+- **R-EXACT-VALUES: Exact values (Decisions 46, 64):** values of Numeric entries,
+  targets and sums are exact decimals with a fixed precision of 3 decimal
+  places; input with more places is rounded. Comparison with the target
+  uses exact arithmetic, never floating point, and never a rounded
+  percentage (R-ACHIEVED). A percentage is an exact fraction (1/3 has no
+  finite decimal expansion); it is truncated only for display, and the
+  average completion percentage is computed from the exact fractions and
+  then truncated down for display. The representation (`BigDecimal`, an
+  integer in thousandths or a fraction type) is chosen in the plan.
+
+### 5.2 Day and entries
+
+- **R-DAY: Day boundary (Decision 13):** a day is a calendar day in the device
   time zone. The time zone is a parameter of the calculation, supplied via
   a clock port, like the week start. A duration entry that crosses midnight
   contributes to each day the part of its length that falls in that day
-  (Decision 12). A manual duration entry gets a default start of 00:00 of
-  the chosen day, which the user can change. If the device time zone
-  changes, days are recomputed from the stored instants (accepted for v1).
-- **Period result (Decision 16):** Duration: total length attributed to the
-  days of the period. Numeric: sum of entry values. Binary: number of days
-  with an entry.
-- **Achieved (Decision 16):** Build: result >= target. Quit: result <=
-  target (the target may be 0).
-- **Completion percentage (Decision 16):** Build: result / target, capped at
-  100% (the cap is a parameter in Domain, always on in v1). Quit: 100% when
-  the limit is kept, otherwise target / result (0% when the target is 0
-  and the result is above 0). A period is achieved exactly when its capped
-  percentage is 100%.
-- **Goal change (Decision 15):** a changed goal applies from the start of
-  the current period; completed earlier periods keep their goal. If the
-  period length changes (e.g. week to day), the new goal applies from the
-  start of the current period of the new length; the cut-off partial period
-  of the old length is neither achieved nor failed and is left out of
-  goal statistics.
-- **Timers (Decision 18):** several timers may run at once, at most one per
-  duration habit. A running timer is just a start instant, so it survives
-  closing the app. Stopping it creates a duration entry (start, length).
+  (Decision 12). A manual duration entry is entered as a start and an end
+  (date and time, R-VALID-ENTRY). The default start is 12:00 of the chosen
+  day when the day is not today, and the current moment when it is today
+  (like a Numeric entry, R-ENTRY-DATE; Decision 63); the default end is the
+  start plus one hour; the user changes both. If the device time zone
+  changes, days of Duration and Numeric entries are recomputed from the
+  stored instants (accepted for v1); Binary entries keep their stored date
+  (Decision 44).
 
-- **Statistics, unfinished period (Decision 19):** the current unfinished
-  period is excluded from "times the goal was achieved" and from the
-  average completion percentage. It is shown separately as "in progress"
-  (result so far vs. target).
-- **Statistics, range edges (Decision 20):** only periods fully inside the
-  chosen range count in the goal statistics. Total time, number of
-  occurrences and average per day use all days of the range. The average
-  per day divides by all days of the range (also days without entries);
-  a range reaching into the future counts only up to today. If the range
-  contains no full period, the screen shows that there are none.
-  Statistics of archived habits stay available (Decision 17).
-- **Timer vs. Android (Decision 21):** no background service. Domain holds
+- **R-ENTRY-DATE: Entries and dates (Decisions 40, 44, 50):** entries apply to
+  the selected day, also a past one; future dates are not possible in v1. A
+  Binary entry on a past date stores that date. The timer works only on
+  today's date; on any other date a Duration habit offers manual entry only.
+  A Numeric entry (added with "+" or a typed value) gets the current moment
+  on today's date and the fixed time 12:00 on any other date, so a time zone
+  change does not move it to a neighboring day. The default start of a
+  manual Duration entry is in R-DAY.
+
+- **R-DAY-VALUE: Value of a day (Decisions 45, 56):** the value of a habit on
+  a date is the total of its entries on that day plus, for Duration, the
+  part of a running timer that falls on that day (up to the current
+  instant). It is the value of the day, not the result of the goal period.
+  For Binary it is occurred / did not occur. The session time of a running
+  timer (now - start) is a separate figure, shown next to Stop and on the
+  timer's item in the entries sheet.
+
+- **R-INDICATOR-PERIOD: Period of the progress indicator (Decisions 41, 50):**
+  the indicator of the Day screen shows the completion percentage of the
+  goal period that contains the selected date (not the period counted from
+  today); a period that is not finished is provisional (its result so far).
+  If several goals contain the selected date (goals of different period
+  lengths may overlap), the newest one (the latest first day; on equal first
+  days the one with the shorter period) is used. A habit with no goal containing the date has no
+  indicator. For a date in an abandoned period (R-GOAL-CHANGE) the indicator
+  shows no percentage but the mark "abandoned"; for a cut-off period
+  (R-STATS-HABIT-LIFE) the mark "archived". Statistics lines leave both out
+  (R-STATS-GOALS).
+
+- **R-TIME-REFRESH: Passing time (Decision 58):** a `Flow` of data does not
+  change when time passes, so time reaches the screens through the Clock
+  port. Besides the current instant and the time zone it exposes a tick
+  stream (every second, only while it has a subscriber; Presentation
+  subscribes only while at least one timer is running) and a signal on a change of day or time zone.
+  Presentation recomputes the time-dependent values (R-DAY-VALUE, the
+  session time, the indicator) on a tick or signal. The selected date of the
+  Day screen is either "today" (it follows the clock, so after midnight it
+  moves to the new day) or a concrete date once the user chose one; choosing
+  today's date puts it back to "today". A timer running over midnight keeps
+  running and its part after midnight belongs to the new day (R-DAY). After
+  a time zone change the days are recomputed from the stored instants (R-DAY).
+
+### 5.3 Timer and notifications
+
+- **R-TIMERS: Timers (Decision 18):** several timers may run at once, at most one per
+  duration habit. A running timer is just a start instant, so it survives
+  closing the app. Stopping it creates a duration entry (start, length). A
+  running timer counts toward the result of its habit: its length
+  now - start is split across days like an entry (R-DAY), up to the current
+  instant, so the result grows live (R-DAY-VALUE, Decisions 45, 56). Statistics
+  count it by the same rule. On the entries sheet it is an extra live item
+  that can be stopped or discarded; editing its start is not in v1.
+
+- **R-TIMER-ANDROID: Timer vs. Android (Decision 21):** no background service. Domain holds
   the start/stop logic (length = now - stored start instant); Persistence
   holds the start instant; Platform services implements a "timer
   notification" port (show / hide). The notification is an ongoing system
@@ -226,6 +558,216 @@ for later").
   in the notification calls the same stop logic as the Stop button in the
   app, through a receiver in Platform services. A later home screen widget
   would be one more adapter on the same ports (out of v1).
+
+- **R-TIMER-HABIT-CHANGE: Timer and habit changes (Decision 51):** archiving
+  a habit with a running timer stops the timer with the normal stop logic
+  (an entry is created) and removes its notification; if the timer's computed
+  length is not positive (R-VALID-TIMER-STOP), it is discarded without an
+  entry and the app shows a message. Deleting a habit
+  discards the timer without an entry, together with the habit's entries,
+  and removes the notification. Both are composite operations of the Data
+  operations port (section 3); the notification is updated after them
+  (R-NOTIFICATION-SYNC repairs a mismatch). A timer has no maximum length: a
+  forgotten timer is corrected by editing the entry in the bottom sheet. A
+  reminder about a long-running timer is in "Ideas for later".
+
+- **R-TIMER-PERMISSION: Notification permission and dismissal
+  (Decisions 47, 57):** the app asks for the notification permission at the
+  first timer start, not at the first launch. After a refusal the timer
+  works without a notification and the app shows a one-time message that
+  Stop is available only in the app. If the user dismisses the notification,
+  nothing changes at that moment: the timer keeps running and Stop stays in
+  the app.
+
+- **R-NOTIFICATION-SYNC: Notification state (Decision 57):** the
+  notifications follow the running timers. One idempotent operation in
+  Platform services shows a notification for every running timer that has
+  none and removes notifications that have no timer (when the permission was
+  granted). App calls it at every process start (also one started by the Stop
+  button of a notification) and after an import. A dismissed
+  notification therefore comes back at the next app start (accepted). After
+  a phone restart, an app update or a force stop the notifications reappear
+  at the next app start, not earlier. The operation is separate from its
+  callers, so a boot receiver (an extra component and permission) can be
+  added later as one more caller; its details are to verify in the plan
+  (open question 7).
+
+### 5.4 Statistics
+
+- **R-STATS-UNFINISHED: Statistics, unfinished period (Decision 41):** the
+  current unfinished period is counted in "times the goal was achieved" and
+  in the average completion percentage, using its result so far with the
+  same rules (R-ACHIEVED, R-PERCENT). The card marks it as provisional and
+  shows the number of days left (the days after today up to the end of the
+  period; scenario E2). For a quit habit the period counts as
+  achieved while the limit is kept and can change before the period ends.
+
+- **R-STATS-RANGE: Statistics, range edges (Decisions 20, 41, 55):** a goal
+  period counts if its first day is in the chosen range and not after today,
+  and either its last day is also in the range, or it is the current period
+  (it contains today) and the range reaches today or later. The current
+  period is then counted with its result so far (R-STATS-UNFINISHED). So
+  "this week", "1 year" and a custom range ending today treat the current
+  period the same way, and a period that starts after today never counts
+  (a daily goal in "this week" counts only the days up to today). Other
+  periods that stick out of the range, also at its start, do not count.
+  An abandoned period does not count (R-STATS-GOALS).
+  Total time, number of occurrences and average per day use the days of the
+  range; the average per day divides by the days within the life of the habit
+  (R-STATS-HABIT-LIFE), also those without entries. A range reaching into
+  the future counts only up to today. If the range contains no period that
+  counts, the card says so. If the range contains no day of the habit's life,
+  the total is 0, there is no average per day (it is not shown, never a
+  division by zero) and the card says so (scenario E11).
+  Statistics of archived habits stay available (Decision 17).
+
+- **R-STATS-GOALS: Statistics per period length (Decisions 52, 62, 67):**
+  goal statistics have one line for each period length that has at least one
+  counting period (R-STATS-RANGE, R-STATS-HABIT-LIFE). A line collects the
+  counting periods of all the habit's goals of that length (they never share
+  a period, INV-GOAL-NO-SHARED-PERIOD), each evaluated against the target of
+  its own goal. Lines of different lengths are never summed, and a day
+  covered by goals of two lengths counts in both lines. An abandoned period
+  is neither achieved nor failed: it is left out of "X of Y" and of the
+  average, and the line shows how many periods were abandoned. Percentage and
+  "achieved" are computed from the entries, never stored.
+
+- **R-STATS-HABIT-LIFE: Statistics, life of the habit (Decision 43):** the
+  life of a habit runs from its creation day (or the day of its earliest
+  entry, if earlier) to its archiving day (inclusive) or today. The average
+  per day divides only by the days of the range inside this life. Goal
+  periods count only where a goal is valid (R-GOAL-VALIDITY) and the habit
+  is not archived: periods before the first goal and after archiving are
+  skipped. A goal period counts only if it contains at least one day of the
+  habit's life (so a retrospective goal start does not create periods that
+  were over before the habit existed; a period that only partly precedes the
+  habit is evaluated whole, like D1). The period containing the archiving day is left out as a
+  cut-off period (neither achieved nor failed). A habit restored from the
+  archive keeps the gap as ordinary days.
+
+### 5.5 Scenario table (specification of goals and statistics)
+
+This table is the specification of the goal and statistics rules above and
+the list of Domain tests (section 8): one row, one test. If a row and a rule
+text disagree, that is a defect to fix in the document, not a choice for
+the implementer. Rows are numbered for the plan; new edge cases are added
+here.
+
+Conventions: today is Wednesday 11 Nov 2026 (the week is Mon 9 - Sun 15
+Nov) unless a row says otherwise. An end of validity is exclusive ("ends 9
+Nov" means the last valid day is 8 Nov). "Setup S": Build habit with a
+weekly goal, target 3 days, mode repeat, first day Mon 26 Oct; weeks of 26
+Oct and 2 Nov are completed, the week 9-15 Nov is current.
+
+**A. Evaluation (R-PERIOD-RESULT, R-ACHIEVED, R-PERCENT, R-EXACT-VALUES)**
+
+| ID | Situation | Expected outcome |
+|---|---|---|
+| A1 | Build, Numeric, daily target 2 l; entries 1.25 l and 0.75 l on one day | Result 2, achieved, 100% |
+| A2 | Build, Binary, weekly target 3; 2 days with an entry | Not achieved, 66% (truncated from 66.6) |
+| A3 | Build, Numeric, target 0.8; entries 0.7 and 0.1 | Achieved, 100% (exact decimals) |
+| A4 | Quit, Binary, weekly limit 3; 3 days, then 4 days | 3 days: achieved, 100%. 4 days: not achieved, 75% |
+| A5 | Quit, limit 0; result 0, then result above 0 | Result 0: achieved, 100%. Above 0: not achieved, 0% |
+| A6 | Build, target 1000 ml; result 996 ml | Not achieved; shown as 99%, never 100% |
+
+**B. Goal change (R-GOAL-CHANGE; S = setup S, "Delete" = delete the unfinished period)**
+
+| ID | Situation | Expected outcome |
+|---|---|---|
+| B1 | S, target to 4, option Delete | Old goal ends 9 Nov and keeps weeks of 26 Oct and 2 Nov. New weekly goal (4) from 9 Nov. No gap, no overlap |
+| B2 | S, target to 4, option Abandon | Old goal ends 12 Nov; week 9-15 is abandoned. New weekly goal from 16 Nov (default; 9 Nov is not available) |
+| B3 | S, target to 4, option Wait | Old goal ends 16 Nov; week 9-15 counts normally with target 3. New goal (4) pending from 16 Nov |
+| B4 | S, period to day (target 1), Delete | Old goal ends 9 Nov. New daily goal from 11 Nov. 9 and 10 Nov have no goal and do not count |
+| B5 | S, period to day, Abandon | Old goal ends 12 Nov; week 9-15 abandoned. New daily goal from 11 Nov. 11 Nov counts in both lines |
+| B6 | S, period to day, Wait | Old goal ends 16 Nov; week 9-15 counts normally. New daily goal pending from 16 Nov (default). If the user picks 11 Nov, 11-15 Nov count in both lines |
+| B7 | Daily goal (target 1) from 9 Nov; period to week (target 3), Delete | Old goal ends 11 Nov (today's period removed; 9 and 10 Nov stay). New weekly goal from 9 Nov. 9 and 10 Nov count in both lines |
+| B8 | Yearly goal from 1 Jan 2026 (no completed period); period to day, Delete | Old goal removed (no empty record). New daily goal from 11 Nov, not from 1 Jan |
+| B9 | As B8, but the user picks the start 1 Nov | New daily goal from 1 Nov; 1-11 Nov are counted (only days of the habit's life, R-STATS-HABIT-LIFE) |
+| B10 | S, period unchanged, target to 4, Abandon; the user picks the start 10 Nov | Not allowed: week 9-15 contains a day of the old goal (INV-GOAL-NO-SHARED-PERIOD). The earliest start offered is 16 Nov |
+| B11 | Weekly goal created today (no completed period); target changed, Delete | Old goal removed; new goal from 9 Nov |
+| B12 | S, switch the goal off | The same three options: Delete ends the goal 9 Nov, Abandon 12 Nov, Wait 16 Nov. No new goal; history stays |
+| B13 | Weekly goal that ended 2 Nov, nothing valid today | The goal section is off; enabling it creates a new goal from 9 Nov. The ended goal stays |
+| B14 | S, only the habit name (or unit, step) changes | No goal changes, no choice is asked |
+| B15 | Goal for 30 days from 11 Nov; N to 40, then N to 10 on 25 Nov (day 15) | 40: the end moves from 11 Dec to 21 Dec, no choice asked. 10 on day 15: rejected, N cannot be below 15 |
+
+**C. Goals for N periods (R-GOAL-VALIDITY)**
+
+| ID | Situation | Expected outcome |
+|---|---|---|
+| C1 | 30 days, created 11 Nov | Ends 11 Dec (last day 10 Dec); nothing repeats |
+| C2 | 30 days, created 20 Jan 2027 | Ends 19 Feb 2027; passes February with no special rule |
+| C3 | 8 weeks, created Wed 11 Nov | First day Mon 9 Nov; ends Mon 4 Jan 2027 |
+| C4 | The day after the end of a goal for N periods | No goal is valid; behaves as B13 |
+
+**D. First period (R-GOAL-VALIDITY)**
+
+| ID | Situation | Expected outcome |
+|---|---|---|
+| D1 | Weekly Binary goal, target 5, created Wed 11 Nov; entries on Mon 9 and Tue 10 Nov | The first period is the whole week 9-15 Nov; both entries count |
+| D2 | Monthly goal created 20 Nov | The first period is the whole of November (from 1 Nov) |
+| D3 | Yearly goal created 11 Nov with the default start | First day 1 Jan 2026 |
+
+**E. Statistics range (R-STATS-RANGE, R-STATS-UNFINISHED, R-STATS-GOALS)**
+
+| ID | Situation | Expected outcome |
+|---|---|---|
+| E1 | Daily goal, range "this week" | 9, 10, 11 Nov count (11 Nov provisional); 12-15 Nov start after today and never count. X of 3 |
+| E2 | Weekly goal, range "this week" | Week 9-15 counts as the current period, provisional, 4 days left. X of 1 |
+| E3 | Monthly goal, range "6 months" (12 May - 11 Nov) | June-Nov count (Nov provisional); May starts before the range and does not. X of 6 |
+| E4 | Monthly goal, range "1 year" (12 Nov 2025 - 11 Nov 2026) | Dec 2025 - Nov 2026 count, Nov provisional. X of 12 |
+| E5 | Quarterly goal, range "this quarter" | Q4 counts as the current period, provisional; the range reaches the future, so only days up to today count |
+| E6 | Weekly goal, custom range 3-8 Nov | No period counts (week 2-8 Nov starts before the range); the card says so |
+| E7 | Weekly goal, custom range 1-31 Oct | Weeks of 5, 12 and 19 Oct count; the week of 26 Oct sticks out of the range and does not. X of 3 |
+| E8 | Daily goal in Oct (ended), weekly goal from 2 Nov; range 1 Oct - 11 Nov | Two lines, never summed: Daily X of 31; Weekly X of 2 (week 9 Nov provisional) |
+| E9 | S abandoned on 11 Nov (B2); range "this week" | Week 9-15 is not counted in "X of Y"; the line shows 1 abandoned period; entries after 11 Nov do not change the goal |
+| E10 | Two goals of different lengths overlap (B5), range "this week" | Weekly line and Daily line both count 11 Nov |
+| E11 | Habit created 11 Nov, range "previous month" (October); or a habit archived before the range | Total 0, no average per day; the card says the range has no day of the habit's life |
+
+**F. Archiving (R-STATS-HABIT-LIFE)**
+
+| ID | Situation | Expected outcome |
+|---|---|---|
+| F1 | Habit with a weekly goal archived on 11 Nov; range "this week" | The week 9-15 contains the archiving day: a cut-off period, neither achieved nor failed, not counted |
+| F2 | Habit created 11 Nov, daily goal with the retrospective start 1 Nov, range "this month" | Only 11 Nov counts (X of 1); 1-10 Nov are before the habit's life and are not periods. For a Quit Binary habit they are not free successes either |
+
+**G. Timer and value of a day (R-DAY, R-DAY-VALUE, R-TIMERS, R-VALID-TIMER-STOP)**
+
+| ID | Situation | Expected outcome |
+|---|---|---|
+| G1 | Timer started 23:30 on 10 Nov, still running at 00:20 on 11 Nov | Value of 10 Nov: 30 min; value of 11 Nov: 20 min and growing |
+| G2 | The timer of G1 is stopped at 00:20 | One entry (start 23:30, length 50 min); 30 min fall on 10 Nov and 20 min on 11 Nov |
+| G3 | Stop when the clock was moved back before the start instant | No entry; a message; the timer keeps running |
+| G4 | Running timer, range "this week", Duration goal | The running timer's length so far is in the total and in the result of the goal period |
+| G5 | Time zone changes | Duration and Numeric entries are recomputed from the stored instants; Binary entries keep their stored date |
+| G6 | Numeric entry added on the past date 5 Nov | Stored with the time 12:00 on 5 Nov |
+| G7 | Habit with a running timer is archived | The timer is stopped with an entry, the notification is removed |
+| G8 | Entry from 23:30 on 10 Nov to 00:20 on 11 Nov; the Entries port reads the range 11 Nov - 11 Nov | The entry is returned (its span overlaps the range), so the 20 min fall on 11 Nov; an export reading range by range loses no entry |
+
+**H. Notifications (R-NOTIFICATION-SYNC, R-TIMER-PERMISSION)**
+
+| ID | Situation | Expected outcome |
+|---|---|---|
+| H1 | The user dismisses the notification of a running timer | The timer keeps running; the notification comes back at the next app start |
+| H2 | An import replaces all data | Notifications are synchronized: one per imported running timer, others removed |
+| H3 | The notification permission is refused at the first timer start | The timer works; a one-time message says Stop is available only in the app |
+
+**I. Limits (R-VALID-GOAL)**
+
+| ID | Situation | Expected outcome |
+|---|---|---|
+| I1 | Binary weekly target 8 | Rejected (maximum 7); 7 is accepted |
+| I2 | Binary monthly target 31, evaluated for February | Accepted; unreachable in February (Decision 65), not achieved |
+| I3 | Duration daily target 25 h, then 24 h | 25 h rejected; 24 h accepted |
+
+**J. Import validation (section 7)**
+
+| ID | Situation | Expected outcome |
+|---|---|---|
+| J1 | A numeric entry (value 3) of a Binary habit | File rejected; current data unchanged |
+| J2 | A negative Numeric value, or a Binary goal target of 8 with a weekly period | File rejected (R-VALID-ENTRY, R-VALID-GOAL) |
+| J3 | A running timer of a Numeric habit, or of an archived Duration habit | File rejected |
+| J4 | An entry, a goal or a timer that refers to a habit missing from the file | File rejected |
+| J5 | A valid file | Imported; all invariants hold afterwards |
 
 ## 6. User interface structure
 
@@ -258,31 +800,56 @@ least one habit there is no such button. Having no entries for a day is a
 normal state and shows nothing special.
 
 **Day screen (Decisions 24, 25, 26):** a list of all habits, in a fixed
-order in v1 (no manual ordering). In v1 every habit appears every day (no
-weekday schedule). Each row has the habit name, an action control that
-depends on the type, and a small progress indicator. It must fit the width
-of a phone.
+order in v1: alphabetical by name, ignoring case (no manual ordering). In v1
+every habit appears every day (no weekday schedule). The rules behind the
+values are in section 5 (R-DAY-VALUE, R-ENTRY-DATE, R-PERCENT,
+R-INDICATOR-PERIOD, R-TIME-REFRESH); this section describes the layout only.
+
+*Row.* Each row has the habit name, an action control that depends on the
+type, the value of the selected day (Decision 45) and a small progress
+indicator. It must fit the width of a phone. Tapping the row (outside the
+action control) opens the bottom sheet of the habit's entries (Decision 27);
+the action control is a separate touch area that performs the action.
+
+*Action controls.*
 - Binary: tap toggles a check (entry exists or not; for a quit habit the
-  check means "it happened").
+  check means "it happened"). The progress indicator uses the green check
+  for a kept limit, so the two must look different: the Binary action
+  control of a quit habit uses a symbol other than the check (UI principles 1
+  and 2; the symbol is chosen in the plan, open question 16).
 - Numeric: a "+" button adds one step as a separate entry, plus a way to
-  type a value (nobody taps "+" 200 times).
-- Duration: start / stop of the timer, plus manual entry of a time.
-- Progress indicator: compact, no descriptive text. It shows the
-  completion percentage of the current period from Decision 16 (result so
-  far). At 100% it shows a green check; otherwise the percentage. For a
-  quit habit it stays a green check while the limit is kept; after the
-  limit is exceeded it shows target / result as a percentage. A habit
-  without a goal has no indicator. Indicator and action control must look
-  different, so the indicator is not mistaken for a button (suggestion: a
-  ring with the number inside; the look is decided in the plan / UI work).
-- If the unfinished period must be marked as "in progress" (Decision 19),
-  the Day screen does it implicitly by showing the result so far; the
-  detailed view is on the Statistics screen.
+  type a value, which adds an entry too (nobody taps "+" 200 times).
+- Duration: start / stop of the timer (only on today's date), plus manual
+  entry of a time. While a timer runs, its session time is shown next to
+  Stop.
+
+*Value (R-DAY-VALUE).* Every row shows the value of the selected day as a
+short text (e.g. "1.25 l", "1 h 20 min"; for Binary the check itself),
+whether or not the habit has a goal. It is the value of the day, not the
+result of the goal period; the period is shown by the indicator.
+
+*Progress indicator (R-PERCENT, R-INDICATOR-PERIOD).* Compact, no descriptive
+text. It shows the completion percentage of the period containing the
+selected date. At 100% it shows a green check; otherwise the percentage. For
+a quit habit it stays a green check while the limit is kept; after the limit
+is exceeded it shows the percentage from R-PERCENT. If a fraction is ever
+shown it reads "result / limit". Indicator and action control must look
+different, so the indicator is not mistaken for a button (suggestion: a
+ring with the number inside; the look is decided in the plan / UI work). If
+the unfinished period must be marked as "in progress" (Decision 41), the Day
+screen does it implicitly by showing the result so far; the detailed view is
+on the Statistics screen.
+
+*Other dates (R-ENTRY-DATE, R-TIME-REFRESH).* Entries apply to the selected
+day, also a past one; the timer is offered on today's date only. The
+selected date follows today until the user changes it. The indicator shows
+the period that contains the selected date.
 
 **Entries of one habit on one day (Decision 27):** tapping a habit row on
 the Day screen opens a bottom sheet with the entries of that habit on the
-selected date. Each entry can be edited (value; for duration start and
-length) or deleted, and an entry can be added manually. Any date is
+selected date. A Numeric entry can be edited (value) and a Duration entry
+too (start and end); a Binary entry has nothing to edit and can only be
+deleted. Any entry can be deleted, and an entry can be added manually. Any date is
 reached with the previous / next arrows or the calendar picker (Decision
 23), so old entries need no separate screen. The picker has no markers
 for days with entries in v1; a month calendar with habits marked on their
@@ -296,28 +863,49 @@ entries (open question 18).
   available). Tapping a row opens the edit form. Archiving and deleting
   (with confirmation) are in the edit form. Export / import is a menu item
   (Decisions 30 and 31).
-- One form for creating and editing: name, direction (Build / Quit),
+- One form for creating and editing. A goal can be created, changed or
+  switched off at any time in the edit form of an existing habit, not only
+  when the habit is created (scenarios B1-B14). The form has: name, direction (Build / Quit),
   measurement type. For Numeric also the unit (built-in or custom label)
-  and the "+" step. Last, an optional goal section (target value and
-  period day / week / month), off by default. Fields that cannot change
-  are shown read-only with a short explanation: direction after creation,
-  type after the first entry (Decision 17). Changing a numeric unit shows
-  a warning (relabel only). Editing a goal changes the value on the same
-  habit (see section 4, Decision 15).
+  and the "+" step. Last, an optional goal section, off by default: target
+  value, period (day / week / month / quarter / year) and how long the goal
+  lasts: it repeats every period (the default) or runs for a number of
+  periods that the user types (e.g. 30 with the period "day"; Decision 53).
+  The start defaults to the current period; the user can pick another date,
+  and the form always shows the calendar period it selects (e.g. "Week 9-15
+  Nov 2026", R-GOAL-VALIDITY). The form lists all goals valid today or pending (two
+  can exist, e.g. after scenario B5); the user edits the one they tap, and a
+  pending goal is edited in place (Decision 68). Changing the target or period
+  of a goal valid today, or switching it off, asks for one of three options: abandon, delete the unfinished period, wait (R-GOAL-CHANGE,
+  Decision 67). Switching it off keeps the history (Decision 42).
+  Fields that cannot change are shown read-only with a short explanation:
+  direction after creation, type after the first entry (Decision 17).
+  Changing a numeric unit shows a warning (relabel only). Editing a goal
+  changes it on the same habit (R-GOAL-CHANGE, Decision 15). Saving the form
+  (habit and goal) is one all-or-nothing operation (section 3).
 
 **Statistics screen (Decision 29):** one screen. At the top a date range
-selector: presets 7 days, 30 days, 6 months, 1 year, and a custom range
-chosen in a calendar. The default is 30 days (Decision 39). Below, one card per habit, with archived habits in a
+selector: presets this week, previous week, this month, previous month, this
+quarter, this year, 6 months, 1 year, and a custom range chosen in a
+calendar. "6 months" and "1 year" end today and start the same calendar day
+that many months or years earlier plus one day (on 11 Nov 2026, "6 months"
+is 12 May - 11 Nov 2026). The default is this week (Decision 41). Below, one card per habit, with archived habits in a
 separate section. The range is common to all cards. A card shows only
 figures that make sense for the habit:
 - Duration: total time and average per day.
-- Numeric: sum of values and average per day (the requirements do not
-  state this explicitly; it mirrors duration, see open question 19).
+- Numeric: sum of values and average per day (REQ-M8d).
 - Binary: number of days with an occurrence.
-- If the habit has a goal: how many times the period goal was achieved,
-  the average completion percentage (rules in section 5), and the current
-  unfinished period shown separately as "in progress" (Decision 19). If
-  the range contains no full period, the card says so (Decision 20).
+- If the habit has goals in the range: one line per period length, labeled
+  with the period (and the target when all counted periods have the same
+  one), with "achieved X of Y" (Y = the periods that count, including the
+  current one), the average completion percentage and, if any, the number of
+  abandoned periods (Decisions 62, 67). Different period lengths (e.g. a
+  daily goal in January and a weekly one in February) get separate lines and
+  are never summed (R-STATS-GOALS). The current unfinished period is included and
+  marked as provisional, with the days left (Decisions 41, 55); the mark
+  appears only when the range reaches today or later, because only then does
+  the range contain the current period. If no period counts, the card says
+  so (Decision 20).
 Charts are out of v1 ("Ideas for later").
 
 **Export / import:** a menu item on the Habits screen; behavior in
@@ -326,32 +914,44 @@ section 7 (Decisions 30 and 31).
 ## 7. Cross-cutting concerns
 
 - **Localization (Decision 22):** Presentation exposes text identifiers
-  and raw values (durations, dates, numbers, unit identifiers); the GUI
-  resolves them from Android string resources and formats them for the
+  and raw values (durations, dates, numbers, unit identifiers) in simple
+  types or types owned by Presentation, not Domain types (Decision 61); the
+  GUI resolves them from Android string resources and formats them for the
   locale. Adding a language means adding resource files only. Built-in
   unit names come from resources; a custom unit is a plain label.
 - **Timer in the background:** see section 5 (Decision 21).
 
 - **Export / import format (Decision 30):** a JSON file with a format
-  version number. The content (habits, goals with their version history,
-  entries, running timers) follows a data model defined by Domain, not the
-  stored representation of Persistence. Domain owns the format rules
-  (validation, supported versions); writing and reading the file is done
-  by an adapter in Platform services through a file port. Changing the
+  version number. The content (export date, habits, goals with their
+  validity, entries, running timers) is described by file-model classes owned by the
+  Platform services adapter (Decision 36), not by the stored representation
+  of Persistence. The adapter parses the JSON and maps it to domain
+  entities, handing Domain the entities together with the format version
+  number (and does the reverse on export). Domain owns the format rules: it
+  checks the version is supported and the data before calling the "replace
+  all" operation (Decision 49). It checks all `INV-*` and `R-VALID-*` rules
+  of section 4, and also that the shape of every entry matches the
+  Measurement of its habit, that a running timer belongs to a habit of type
+  Duration that is not archived, and that every reference (of an entry, a goal
+  or a timer) points to a habit in the file (scenarios J1-J5). Domain has no separate export model. Changing the
   persistence library or its schema does not invalidate old files. Export
   to CSV or other formats is not planned (add to "Ideas for later" if
   wanted).
 
 - **Import behavior (Decision 31):** import replaces all data in the app
   with the content of the file. Before replacing, the app shows a short
-  summary of the file (export date, number of habits and entries) and
+  summary of the file (export date, number of habits and entries; the date is
+  stored in the file) and
   asks for confirmation, with a warning that current data will be lost.
-  The file is validated first (format, supported version); import is
+  The file is validated first (format, supported version, the rules above); import is
   all-or-nothing: an invalid file or one from a newer unsupported version
   is rejected and the current data stays unchanged. Merging with existing
   data is out of v1 ("Ideas for later" in the requirements). After an
-  import, running timers and the timer notification must match the
-  imported timers (open question 20).
+  import, the timer notifications are synchronized with the imported timers
+  (R-NOTIFICATION-SYNC). The file is chosen with the system picker in the
+  GUI, which passes an opaque string identifier of the file through
+  Presentation and Domain to the Backup file port; only Platform services
+  can interpret it (Decision 60).
 
 - **System backup (Decision 33):** Android Auto Backup (cloud backup and
   device-to-device transfer) is disabled for the app, so data leaves the
@@ -368,11 +968,16 @@ section 7 (Decisions 30 and 31).
 Decision 38. Tests follow the components; the weight is on logic. Detailed
 test cases belong to the plan.
 
-- **Domain (JVM unit tests):** periods, goal evaluation, completion
-  percentage, statistics, splitting a duration entry across days, timer
+- **Domain (JVM unit tests):** every row of the scenario table (end of
+  section 5) is one test; besides that periods (day to year), goal
+  validity and goal change, goal evaluation, completion percentage and its
+  display rounding,
+  exact decimal sums (0.7 + 0.1 reaches a target of 0.8), statistics,
+  splitting a duration entry across days (also a running timer), timer
   logic, export file format. Ports are replaced by simple hand-written
-  fakes (in-memory repositories, a clock with a fixed time and time zone,
-  Decision 13); no mocking library.
+  fakes (in-memory repositories, a clock with a fixed time and time zone
+  and with ticks and day changes triggered by the test, Decision 13); no
+  mocking library.
 - **Presentation (JVM unit tests):** screen state and reactions to
   actions, with the same kind of fakes.
 - **Persistence (instrumented, device or emulator):** Room with an
@@ -391,53 +996,25 @@ test cases belong to the plan.
   three-habit week (a duration build habit with a timer and a past-day
   entry, a numeric build habit with a daily goal, a binary quit habit with
   a limit of 3 days per week) with hand-computed expected results.
-- Goals evaluated correctly: the same tests plus edge cases (result equal
-  to target, target 0, goal change in the middle of a period).
+- Goals evaluated correctly: the same tests plus edge cases:
+  - result equal to target, target 0;
+  - goal change in the middle of a period with each of the three options,
+    also with a changed period length and a retrospective start
+    (R-GOAL-CHANGE, scenarios B1-B15);
+  - a goal for 30 days that passes through February (R-GOAL-VALIDITY);
+  - a range ending today with a weekly and a monthly goal, and "1 year"
+    versus "this week" (R-STATS-RANGE);
+  - a timer running over midnight, in the day value and in statistics;
+  - the notification sync after a dismissal and after an import.
 - Final confirmation: one week of real use by the author.
 
-## 9. Decisions log
+## 9. Decisions and patterns
 
-| # | Decision | Options considered | Reason |
-|---|---|---|---|
-| 1 | Separate Gradle module for Domain (pure Kotlin/JVM) + one `app` module; the rest separated by packages. | (a) separate Domain module + `app`; (b) single module, packages only; (c) several modules (domain / data / presentation / ui). | The compiler enforces that Domain cannot use Android (design principle 1), tests run fast on the JVM. (b) enforces nothing. (c) is more configuration than this app justifies. |
-| 2 | A goal is optional. | (a) optional; (b) mandatory. | Tracking without goals must be possible; requirements do not say goals are mandatory. |
-| 3 | Goal is separate from Habit. | Goal inside Habit. | Habit is a pure definition; changing a goal must not change the habit. Allows a goal history. (User decision.) |
-| 4 | Measurement (type and unit) is separate from Habit. | Type and unit inside Habit. | Habit is a pure definition; the unit describes how a habit is measured. (User decision.) |
-| 5 | Direction (Build / Quit) lives in Habit. | (a) in Goal; (b) in Habit; (c) in Measurement. | Direction is the intent of the habit and exists without a goal (e.g. tracking time one wants to reduce). Matches the wording of the requirements. The goal comparison is derived from it. (User decision; the initial recommendation was (a).) |
-| 6 | Entry stores a moment in time, not only a day. | Day only. | Timer sessions and manual entries have a time; the day is derived from it. (User decision.) |
-| 7 | A goal without a period (cumulative, e.g. "1000 books") is out of v1. Added to "Ideas for later" in `docs/REQUIREMENTS.md`. The period stays a separate attribute of the goal. | (a) out of v1; (b) in v1 (needs new rules and a change of the requirements); (c) leave open. | Not needed by the v1 success criteria; (b) adds rules with no backing in the requirements. (a) keeps the variant possible later. (User decision.) |
-| 8 | GUI toolkit: Jetpack Compose. | (a) Jetpack Compose; (b) Android Views (XML) with ViewBinding; (c) Kotlin Multiplatform with Compose Multiplatform. | Mainstream, current standard for new Android apps, the "state down, events up" model fits the Presentation/GUI split. (b) means more boilerplate and imperative view updates. (c) designs for iOS, which is out of v1, and adds complexity. (User decision.) |
-| 9 | Presentation pattern: **MVVM with unidirectional state flow**. Presentation classes are pure Kotlin (expose a `StateFlow` of screen state and action methods); a thin androidx `ViewModel` in the GUI component only keeps them alive across rotation. | (a) MVVM with unidirectional state; (b) MVI (single state, intents, reducer); (c) MVP (presenter drives the view through an interface). Variant: use androidx `ViewModel` directly as the Presentation class. | (a) gives the state/action split that principles 1 and 2 need with little ceremony and fits Compose. (b) adds ceremony not justified by simple screens. (c) is imperative and fits Views, not Compose. The direct `ViewModel` variant was rejected: pure Kotlin keeps Presentation independent of Android and testable on the JVM, at the cost of one small holder class per screen. (User decision.) |
-| 10 | Measurement is a **closed `sealed` hierarchy** (Binary, Numeric with unit, Duration). A unit is data inside Numeric (built-in or custom label), not a new variant. | (a) sealed hierarchy (sum type); (b) enum plus optional fields; (c) open class hierarchy with polymorphism (Strategy pattern). | The set of types is known and closed in v1 (scale and checklist are Won't), so compiler-checked exhaustive handling is worth more than openness. (b) allows invalid states (Binary with a unit, Numeric without one). (c) would mix rules with presentation and adds flexibility v1 does not need. (User decision.) |
-| 11 | The week starts on Monday. The first day of the week is a parameter of period calculation. | (a) always Monday; (b) from the device settings (needs another port, result depends on the phone); (c) user setting in the app (needs a settings screen, not in the v1 requirements). | v1 is for the author and friends in Poland; (b) and (c) add a port or a screen with no backing in the requirements. Making it a parameter keeps (b) and (c) possible later. (User decision.) |
-| 12 | A duration entry always has a start instant and a length. Domain computes the split per day; the entry stays one. | (a) one entry, split computed in Domain; (b) split into several entries silently when the timer stops; (c) assign the whole entry to the day it started. | (a) keeps one source of truth, one session stays one session for editing and deleting, and works for sessions longer than a day. (b) modifies data nobody asked to change and leaves orphan halves after an edit. (c) is simplest but less accurate. (User decision; the user first proposed (a) or (b) and chose (a).) |
-| 13 | A day is a calendar day in the device time zone; the time zone is a parameter supplied via a clock port. A manual duration entry gets a default start of 00:00 of the chosen day, editable. | (A) calendar day in the device time zone; (B) like A with splitting of sessions across days; (C) custom day boundary (e.g. 04:00). | (A) is simplest and matches the requirements; splitting was added by Decision 12; (C) needs a setting not in the requirements. (User chose B, which is A plus Decision 12.) |
-| 14 | Entries per habit per day: duration many; numeric many, summed; binary at most one (invariant). | Numeric: one overwritten value per day; binary: several per day. | Summing keeps logging low-friction (0.5 l now, 0.3 l later). One binary entry per day keeps "occurrences" and "days with occurrence" the same number. A sub-day binary habit can be modeled as a numeric count; longer periods are aggregations of days. (User decision.) |
-| 15 | Goals have versions. A change applies from the start of the current period; earlier periods keep their goal. A change of period length applies from the start of the current period of the new length; the cut-off partial old period is excluded from goal statistics. | (a) goal history, applies from the next period; (b) one current goal, history recalculated; (c) goal history, applies from the start of the current period. | Statistics such as "how many times the goal was achieved" are only meaningful if the past does not change (rules out b). The user rejected waiting for the next period (a): the change should take effect immediately and recompute the current period. (c) chosen. |
-| 16 | Goal evaluation and percentage as in section 5. Capping is a Domain parameter, always on in v1; a user option is in "Ideas for later". | Percentage without a cap; quit with a linear penalty. | Capping stops overshoots from hiding missed periods in averages. Quit uses target / result because it needs no special case for a target of 0. The uncapped variant is not meaningful for quit. One formula feeds both "times achieved" and "average percentage". (User decision.) |
-| 17 | Habit management: archiving keeps entries and statistics (available for archived habits) and the habit can be restored; deleting removes everything after confirmation; direction immutable after creation; measurement type immutable after the first entry; name editable; changing a numeric unit only relabels, with a warning, no conversion. Conversion of built-in units is in "Ideas for later". | Unit: (A) relabel only; (B) immutable after the first entry; (C) convert history; (D) unit per entry, convert at presentation. | Conversion is out of v1 and impossible for custom labels (C, D). (B) blocks fixing a typo or a wrong choice. (A) keeps one unit per habit, so statistics always have one meaning. Immutable direction protects the history and the meaning of goals. (User decision.) |
-| 18 | Several timers may run at once, at most one per duration habit. | (a) one timer at a time; (b) several timers. | (a) adds a rule "what happens on starting a second one", which is friction (key quality). The model already allows (b). (User decision.) |
-| 19 | The current unfinished period is excluded from "times achieved" and the average completion percentage; shown separately as "in progress". | (A) exclude and show separately; (B) include as it stands; (C) include only if already achieved. | A period whose result still changes is neither success nor failure. (B) lowers averages unfairly. (C) is inconsistent between build and quit. Consistent with Decision 15. (User decision.) |
-| 20 | Goal statistics use only periods fully inside the chosen range; other statistics use all days of the range; average per day divides by all days in the range (to today at most). | (A) only full periods; (B) overlapping periods with the full period result; (C) overlapping periods evaluated on the part inside the range. | A period can only be judged on complete data. (B) makes the range statistic depend on data outside it. (C) judges a goal on part of its period. Cost: a short range may contain no full period. (User decision for A; the average-per-day default was proposed by the assistant and not objected to.) |
-| 21 | Timer: no background service. Domain computes length from the stored start instant; a notification port in Platform services shows an ongoing notification with a system chronometer (display only) and a Stop button calling the same stop logic. | (A) no service, ongoing notification with chronometer; (B) foreground service that ticks and refreshes the notification; (C) periodic work (WorkManager). | The start instant is the source of truth, so nothing needs to run in the background. (B) adds a service and type declarations for no gain. (C) cannot refresh in seconds. Keeps principle 1 (Domain does not know notifications) and a later widget possible. (User decision.) |
-| 22 | Localization: Presentation exposes text identifiers and raw values; the GUI resolves texts and formats dates, numbers and durations. | (A) identifiers and raw values, GUI resolves; (B) a `StringProvider` port, Presentation returns ready texts; (C) Presentation uses Android resources directly. | (A) keeps Presentation free of Android with no extra port, tests check identifiers, language change needs no state recompute. (B) adds a port and stale texts after a language change. (C) breaks principle 1. Cost: formatting logic is in the GUI and is rewritten if the GUI is replaced. (User decision.) |
-| 23 | Navigation: bottom bar with 3 tabs (Day, Habits, Statistics), no swipe between tabs; Day always the default; empty state on Day only when there is no habit that is not archived; creating habits only on the Habits screen; default-start-screen setting out of v1 (added to "Ideas for later"). | (A) 3 tabs; (B) Day as base with a menu / drawer; (C) 4 tabs with Settings. For the first start: (a) a first-run flag opening the Habits screen; (b) empty state on Day derived from data; (c) a setting for the default screen. | (A) puts logging, management and statistics one tap apart and adds no screen the requirements do not need. (C) would have an almost empty tab. A first-run flag (a) is stored state and fails when the user deletes all habits; (b) follows from the data. (c) needs a settings screen not in the v1 requirements. In v1 every habit shows every day, so "no habits" is the only empty case. (User decision; the user proposed the first-run idea, the assistant proposed (b), the user agreed after clarification.) |
-| 24 | Day screen: the input method follows the habit type (binary: check toggle; numeric: "+" and typed value; duration: timer and manual time); fixed order in v1. | One uniform input (a dialog for every type); manual ordering. | Fewest taps for the common action (key quality). Manual ordering is not in the v1 requirements. (User decision.) |
-| 25 | Numeric habit has an optional step for "+", default from the unit (1 for a custom unit); each tap creates a separate entry. | (A) fixed step of 1; (B) step set per habit with a default from the unit; (C) no step, "+" opens a value dialog. | (A) is useless for 0.25 l or 200 ml. (C) needs typing every time. (B) makes the common case one tap at the cost of one more field. Consequence: the list of built-in units needs a default step per unit (open question 11). (User decision.) |
-| 26 | Day progress indicator: compact, percentage of Decision 16 for the current period, green check at 100% (also for a quit habit while the limit is kept), no indicator without a goal. | (A) "result / target" text for all; (B) percentage for both directions; (C) percentage for build, "result / limit" for quit. | Text is too long for a phone row next to the action control. A quit habit that shows a green check while the limit is kept is positive and motivating (UI principle 2). One format for all habits is faster to read. After exceeding the limit it shows target / result as a percentage, e.g. limit 3, result 5 gives 60%. If a fraction is ever shown it should read "result / limit". (User decision.) |
-| 27 | Entries of a habit on a day are edited and deleted in a bottom sheet opened by tapping the habit row on the Day screen; manual adding is there too. Old entries are reached through the date picker. No date markers in the picker in v1. | (A) bottom sheet from the Day row; (B) separate history screen of the habit, from the Habits screen; (C) long press on the row. For the sheet: bottom sheet vs. full screen. | (A) is one tap from the day being viewed and adds no screen to the 3-tab navigation. (B) is more code and navigation and forces leaving the Day screen to fix a day. (C) is hard to discover (UI principle 1). A bottom sheet closes faster and fits a short list. Cost: no view of all entries of a habit across days. Markers or a month calendar are a later iteration ("Calendar screen" in "Ideas for later"); this choice keeps that possible. (User decision; the user stated that a month calendar with marked habits is wanted in later iterations.) |
-| 28 | Habit create / edit form: one form, fields depend on the type, optional goal section off by default; the same form edits. Editing a goal does not create a new habit; goal versions are an internal detail (Decision 15 unchanged). Habits screen: list, "+", collapsible archived section. | (A) one form; (B) step-by-step wizard; (C) minimal form, goal and unit added later in edit. | (A) fits "easy to configure, minimal friction": everything in one place, a simple habit needs three fields. (B) adds screens and taps. (C) leaves a numeric habit without a unit and needs a separate step for the goal. (User decision; the user clarified that changing a goal must not look like creating a new habit.) |
-| 29 | Statistics screen: one screen with a common date range at the top and one card per habit (archived in a separate section); figures per type: duration total and average per day, numeric sum and average per day, binary days with an occurrence; with a goal also times achieved, average completion percentage and "in progress". | (A) one screen, cards for all habits; (B) pick a habit first, then its statistics; (C) one habit at a time with a switcher. | The range is common, so it is set once and all habits are visible without extra taps. (B) and (C) need more taps and make comparison harder. The numeric figures are a clarification of the requirements, not a change (open question 19). (User decision.) |
-| 30 | Export / import format: JSON with a format version, based on a data model defined by Domain; file access through a port implemented in Platform services. | (A) versioned JSON from the Domain model; (B) copy of the SQLite database file; (C) CSV. | Backup is the only way to restore data (offline, no account), so old files must stay readable. (A) keeps the format independent of the persistence library and its schema (principle 1) and lets Domain own the validation rules. (B) is simplest but ties backups to the database schema. (C) loses information or needs several files for habits, goals and entries. Cost: mapping to and from the file model and compatibility tests. (User decision.) |
-| 31 | Import replaces all data after a summary, a warning and a confirmation; the file is validated first and import is all-or-nothing. Merge is out of v1 (added to "Ideas for later" in the requirements). | (A) replace; (B) merge; (C) user chooses replace or merge. | The main scenario is restoring a backup, where replacing is natural and predictable. (B) needs conflict rules (same habit in both places, overlapping entries, a second binary entry on one day, different goals) that nobody specified, and a mistake silently corrupts statistics. (C) contains all of (B). Cost: entries made after the export are lost, hence the confirmation. (User decision; the user asked to move merge to "Ideas for later".) |
-| 32 | One ongoing notification per running timer (habit name, system chronometer, own Stop button). | (A) one notification per timer; (B) one combined notification for all timers; (C) a notification only for the most recently started timer. | Timers are independent (Decision 18), so a notification mirrors one timer: start shows it, stop hides it. The notification port stays simple (show / hide for a habit) and Stop calls the same logic as in the app. (B) makes a Stop button per timer awkward. (C) hides running timers. Cost: more space in the notification shade with several timers, a rare case. (User decision.) |
-| 33 | Android Auto Backup is disabled; backup is only the manual export / import. | (A) disabled; (B) enabled. | The requirements forbid any data leaving the device except a user-initiated export. (B) is more convenient on a phone change but sends data to Google's cloud. Cost: a new phone without a prior export means data loss. Cloud backup stays in "Ideas for later". (User decision.) |
-| 34 | Minimum Android version: 13 (API 33). | (A) API 26 (Android 8); (B) API 33 (Android 13); (C) API 31 (Android 12). | All v1 users (the author and friends) have recent phones, so support for old systems would be code that never runs. (B) gives one notification-permission path and native `java.time`. (A) and (C) keep legacy branches without a user who needs them. Cost: phones that never got Android 13 are excluded; lowering later is a local change in Platform services. Google Play publication is a Won't for v1. (User decision; the user questioned the initial recommendation of API 26.) |
-| 35 | Persistence library: Room, used only in Persistence behind the storage ports. | (A) Room; (B) SQLDelight; (C) plain SQLite (`SQLiteOpenHelper`); DataStore rejected as unfit for relational data. | Room is the mainstream, best documented choice (learning project), checks queries at compile time, supports coroutines / `Flow` and schema migrations, which are needed because data must survive app changes. (B) is multiplatform (iOS is out of v1) and has less learning material. (C) means much manual code and manual migrations. Cost: Room is Android-specific, which does not matter because it is confined to Persistence. Versions are checked in the plan. (User decision.) |
-| 36 | (1) JSON: kotlinx.serialization in the Platform services adapter, with file-model classes separate from Domain. (2) Dependency injection: manual, by constructor, wired in App. (3) Navigation: Navigation Compose. | (1) Moshi; manual `org.json`. (2) Hilt; Koin. (3) hand-written screen state without a library. | (1) Kotlin-native, no reflection, and keeping its annotations out of Domain preserves principle 1; Moshi needs extra setup with Kotlin, `org.json` means much manual code. (2) The app has few components, so a framework adds configuration (generated code, modules) without a gain; constructor injection keeps a later switch possible; cost is manual wiring in one place that grows with the app. (3) Standard for Compose; the hand-written variant would work for three tabs but teaches less. Versions are checked in the plan. (User decision.) |
-| 37 | Built-in units: ml, l, glasses, g, kg, km, steps, kcal, pages, repetitions, count, each with a default "+" step (table in section 4). Identifiers and steps in Domain, names in resources. | A longer list; a shorter list; no built-in units. | A short list covers the user's examples (fluids, books, steps), and anything missing is a custom unit, so nothing is blocked. Extending the list means adding entries. (User decision; the list was proposed by the assistant and accepted.) |
-| 38 | Testing strategy: Domain and Presentation as JVM unit tests with hand-written fakes; Persistence instrumented; export round-trip tests; GUI and Platform services checked manually; success criteria via a replay test of the three-habit week and one week of real use. | (A) tests per component, weight on logic; (B) A plus Compose UI tests; (C) mostly end-to-end tests. | Most errors hide in rules (periods, percentages, midnight), which are the cheapest and fastest to test; the architecture was built for that. (B) adds maintenance for a GUI that is meant to be replaceable. (C) is slow and fragile. Cost: no automated screen tests, so screen regressions need manual checks. (User decision.) |
-| 39 | Statistics range presets: 7 days, 30 days, 6 months, 1 year, plus a custom range from a calendar; default 30 days. | A different list of presets; custom range only. | 6 months and 1 year are the examples in the requirements; shorter presets suit a week-long trial; a default avoids an empty screen on opening. (User decision; proposed by the assistant.) |
+The decisions log (Decisions 1-67, numbers 19 and 39 unused: the choice,
+options considered, reason)
+is in `docs/DESIGN-DECISIONS.md`. This document cites decisions by number.
+The rules themselves are owned by sections 4-5 (section 6 describes the
+layout and cites the rules); the log gives the reasoning.
 
 **Patterns used** (design principle 3):
 
@@ -445,47 +1022,37 @@ test cases belong to the plan.
 |---|---|---|---|
 | MVVM with unidirectional state flow | Presentation / GUI | See Decision 9. | MVI, MVP: see Decision 9. |
 | Sealed hierarchy (sum type) | `Measurement` | See Decision 10. | Enum plus optional fields, Strategy: see Decision 10. |
-| Ports and Adapters (dependency inversion) | Domain defines ports; Persistence and Platform services implement them | Required by principle 1: dependencies must point to Domain. | Domain calling Room or Android directly breaks principle 1. (Announced to the user, no objection.) |
+| Ports and Adapters (dependency inversion) | Domain defines ports; Persistence and Platform services implement them | Required by principle 1: dependencies must point to Domain. See Decisions 48 and 66. | Domain calling Room or Android directly breaks principle 1. |
 | Dependency Injection (manual, constructor) | App wires all components | Components receive their ports through constructors; only App knows concrete classes (principle 1). See Decision 36. | Service locator hides dependencies; Hilt / Koin add configuration the app does not need. |
-| Repository | Shape of the storage ports | Domain sees a collection of entities, not a database. | Ports shaped like SQL queries leak persistence details into Domain. (Announced to the user, no objection.) |
+| Repository | Shape of the storage ports | Domain sees a collection of entities, not a database. See Decision 66. | Ports shaped like SQL queries leak persistence details into Domain. |
 
 ## 10. Open questions
 
-1. (Resolved: Decision 14.)
-2. (Resolved: Decisions 12 and 13.)
-3. (Resolved: Decision 15.)
-4. (Resolved: Decision 17.)
-5. (Resolved: Decision 17.)
-6. (Resolved: Decision 18.)
-7. (Resolved: Decision 21.) Still to verify in the official Android docs
-   before the plan (the assistant is not sure): the exact API for a
-   notification chronometer; whether an ongoing notification without a
-   foreground service can be dismissed by the user on current Android
-   versions; whether a notification permission is required (Android 13+).
-8. (Resolved: Decision 22.)
-9. (Resolved: the diagram shows App wiring to GUI and Presentation.)
-10. (Resolved: Decision 34.)
-11. (Resolved: Decision 37.)
+**Open, carried to the plan phase** (none changes the structure of the
+design):
+
+7. Verify in the official Android docs before the plan (the assistant is
+   not sure): the exact API for a notification chronometer; whether an
+   ongoing notification without a foreground service can be dismissed by
+   the user on current Android versions; for a later boot receiver
+   (Decision 57): its permission and restrictions, and whether it may post
+   the notification without a foreground service. The decisions themselves
+   are made (Decisions 21, 47 and 57); this is only verification.
 12. App name (inherited from requirements).
-13. (Resolved: Decisions 19 and 20.)
-14. (Resolved: Decision 32.)
-15. (Resolved: Decision 37.)
-16. Look of the progress indicator (ring or other) and whether the Day
-    screen needs any explicit "in progress" mark (UI / plan phase).
-17. (Resolved: Decision 39.)
+16. Look of the progress indicator (ring or other), whether the Day
+    screen needs any explicit "in progress" mark, and the symbol of the
+    Binary action control of a quit habit, which must differ from the green
+    check of the indicator (UI / plan phase).
 18. Later iteration: a month calendar with habits marked on their days
     replaces or extends the date picker ("Ideas for later"). Needs a
     Domain query for days with entries and, for the marks, colors / icons
     of habits (also in "Ideas for later"). Not designed in v1.
-19. Statistics for Numeric habits are not stated in the requirements
-    (sum and average per day proposed, Decision 29); the user agreed to the
-    proposal, to be kept in mind for `docs/REQUIREMENTS.md`.
-20. After an import, how the running timers and the timer notification are
-    brought in line with the imported timers (Platform services; detail
-    for the plan).
 21. Exact Android settings to disable Auto Backup and device transfer
     (to verify in the official docs; the assistant is not sure of the
     current details).
 
-Carried to the plan phase: 7, 12, 16, 18, 19, 20, 21. None of them changes
-the structure of the design.
+**Resolved** (numbers kept so that references stay valid): 1 (Decision 14),
+2 (12, 13), 3 (15), 4 and 5 (17), 6 (18), 8 (22), 9 (the diagram shows App
+wiring GUI and Presentation), 10 (34), 11 (37), 13 (20, 41), 14 (32),
+15 (37), 17 (41), 19 (REQ-M8d in the requirements), 20 (57), 22 (R-GOAL-CHANGE),
+23 (R-DAY, Decision 63).

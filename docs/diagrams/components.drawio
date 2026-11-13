@@ -28,10 +28,10 @@
         <mxCell id="u305NUy0W9hrtNy8YMIr-38" edge="1" parent="1" source="u305NUy0W9hrtNy8YMIr-33" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;" target="u305NUy0W9hrtNy8YMIr-34" value="uses">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="u305NUy0W9hrtNy8YMIr-39" edge="1" parent="1" source="u305NUy0W9hrtNy8YMIr-35" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.194;entryDx=0;entryDy=0;entryPerimeter=0;" target="u305NUy0W9hrtNy8YMIr-34" value="implements&#xa;storage ports">
+        <mxCell id="u305NUy0W9hrtNy8YMIr-39" edge="1" parent="1" source="u305NUy0W9hrtNy8YMIr-35" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.194;entryDx=0;entryDy=0;entryPerimeter=0;" target="u305NUy0W9hrtNy8YMIr-34" value="implements&#xa;storage ports&#xa;and Data operations">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="u305NUy0W9hrtNy8YMIr-40" edge="1" parent="1" source="u305NUy0W9hrtNy8YMIr-36" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.806;entryDx=0;entryDy=0;entryPerimeter=0;" target="u305NUy0W9hrtNy8YMIr-34" value="implements&#xa;platform ports">
+        <mxCell id="u305NUy0W9hrtNy8YMIr-40" edge="1" parent="1" source="u305NUy0W9hrtNy8YMIr-36" style="endArrow=block;html=1;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.806;entryDx=0;entryDy=0;entryPerimeter=0;" target="u305NUy0W9hrtNy8YMIr-34" value="implements&#xa;platform ports&#xa;and calls Domain (Stop)">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="u305NUy0W9hrtNy8YMIr-41" edge="1" parent="1" source="u305NUy0W9hrtNy8YMIr-31" style="endArrow=open;dashed=1;html=1;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.073;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="u305NUy0W9hrtNy8YMIr-32" value="creates">
