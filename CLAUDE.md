@@ -33,6 +33,7 @@ project: the goal is to practice a structured AI-assisted workflow.
 
 ## Layout
 - docs/ - requirements, design, plan
+  - docs/UX.md - screens, navigation and layout (part of the design phase)
   - docs/STATUS.md - current state of the project and the next steps (see
     Workflow, "Session state")
   - docs/DESIGN-DECISIONS.md - decisions log of the design (cited as "Decision N")
