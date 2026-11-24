@@ -17,8 +17,26 @@ Last updated: 2026-11-24.
 - Review reports of the design loops deleted from `docs/reviews/` (2026-11-24);
   their deferred findings are listed below.
 - Next phase: plan (`docs/PLAN.md`). Not started; it needs the user's explicit start.
-- Uncommitted: `docs/DESIGN.md`, `docs/DESIGN-DECISIONS.md` (S3 and the user's reasons
-  added to a few rows), this file.
+- Uncommitted: the plan tooling (see "Plan tooling" below), `.gitignore`,
+  `CLAUDE.md` (Layout), the deletion of `.claude/agents/tmp-planner.md`, this file.
+
+## Plan tooling (agreed with the user 2026-11-24)
+
+- `.claude/skills/plan-interview/SKILL.md`: the plan phase as a conversation in the
+  main session (not an agent); progressive reading; `docs/PLAN.md` written during the
+  conversation with a DRAFT banner; task status `todo` / `in progress` / `done` /
+  `dropped`; effort S/M/L/XL = 1/2/4/8 points.
+- `docs/PLAN.md` is the only source of truth; the dashboard is only a view of it.
+- `.claude/scripts/req_index.py`: index of requirement IDs; `--coverage` lists the IDs
+  that need a task: REQ-M*, REQ-S*, REQ-C*, REQ-SC* and all BHV-* (not Won't, not
+  REQ-X*).
+- `.claude/scripts/plan_dashboard.py` (+ template `plan_dashboard.html`): writes
+  `docs/dashboard/index.html` (not in git); Mermaid 12.3.0 downloaded once to
+  `docs/dashboard/vendor/` (not in git, SHA-256 checked). Page: summary cards, next
+  up, collapsible milestones, per task "waits on · blocks" (open effort of all
+  transitive dependencies / dependents), click a task for details and a dependency
+  graph, requirement coverage: done (all covering tasks done), in progress, planned,
+  missing, deferred. Tested on a sample plan only.
 
 ## Agreed at the approval (2026-11-24)
 
@@ -50,17 +68,16 @@ name) and 21 (iOS transfer setting of Auto Backup).
 
 ## Next steps (the user gates every step)
 
-1. The user commits the changes.
+1. The user reviews and commits the plan tooling.
 2. Loop tooling, optional: a convergence rule for `/design-loop` (e.g. rounds only on
    Blocking + new Important). Not decided.
 3. Links for IDs (user wants them, later): `BHV-*`, `Decision N`, `UI-*` as Markdown
    links to `<a id>` anchors, with a script (could extend `check-refs.sh`). A separate
    change.
-4. The user starts the plan phase (agreed for after the commit) (`.claude/agents/tmp-planner.md` is a temporary
-   initial description of a planner agent).
+4. The user starts the plan phase with `/plan-interview`.
 
 ## To resume
 
-1. Ask whether the uncommitted changes were committed.
+1. Ask whether the plan tooling was committed and whether the dashboard needs changes.
 2. Ask about steps 2-3, then whether to start the plan phase. Do not start it without
    the user's explicit approval.

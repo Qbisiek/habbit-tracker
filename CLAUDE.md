@@ -49,6 +49,11 @@ project: the goal is to practice a structured AI-assisted workflow.
 - .claude/skills/, .claude/agents/, .claude/scripts/ - workflow tooling
   - .claude/scripts/check-refs.sh - mechanical reference check of docs/ (IDs,
     Decisions, UI-*, section references); run it before a docs review
+  - .claude/scripts/req_index.py - index of requirement IDs (ID, priority,
+    title) from docs/REQUIREMENTS.md; read it instead of the whole file
+  - .claude/scripts/plan_dashboard.py - generates the progress dashboard
+    docs/dashboard/index.html from docs/PLAN.md (not in git; PLAN.md is the
+    only source of truth). Template: plan_dashboard.html
 - android/ - the Android project (does not exist yet)
 
 ## Scope

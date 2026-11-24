@@ -168,3 +168,9 @@ build/
 
 # Reports of docs-reviewer (kept only until their findings are closed)
 docs/reviews/
+
+# Progress dashboard generated from docs/PLAN.md (HTML and the downloaded graph library)
+docs/dashboard/
+
+# Python bytecode of the workflow scripts
+__pycache__/
