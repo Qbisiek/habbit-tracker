@@ -59,7 +59,7 @@ is rejected, the UI does not let it be saved:
     opens with an invalid default (an empty name, a Duration entry of length 0) only
     has Save disabled, without a message;
   - *changed*: its value at Save differs from the stored value (for a time, the hour
-    and minute shown). It decides which rule applies and what is stored
+    and minute shown or, for a Duration time, its offset from UTC). It decides which rule applies and what is stored
     (BHV-ENTRY-R5, R6b). A field set back to its stored value is not changed;
 - a check runs only on what the user changes: an existing entry that already lies
   after now (after a change of the time zone) opens with Save enabled, and only a
@@ -199,10 +199,11 @@ Deleting an entry or discarding the timer happens at once, without a dialog; a
 snackbar with "Undo" stays for a few seconds (UI-MSG-UNDO-ENTRY, UI-MSG-UNDO-TIMER,
 section 7; Decision 86). The snackbar is shown on the Day screen, above the sheet, and
 stays when the sheet is closed, until it times out or is withdrawn:
-- the undo of a deleted entry disappears when the habit gets a new entry on that day,
-  or is archived or deleted (BHV-ENTRY-R6a);
+- the undo of a deleted entry disappears when the habit gets a new entry on a day
+  that the deleted entry covers, or is archived or deleted (BHV-ENTRY-R6a);
 - the undo of a discarded timer disappears when a new timer of the habit is started,
   or the habit is archived or deleted (BHV-TIMER-R1).
+Only the last deletion or discard can be undone: a new one replaces the snackbar.
 Any date is reached with the previous / next arrows or the calendar picker
 (Decision 27), so old entries need no separate screen. The picker has no
 markers for days with entries in v1; a month calendar with habits marked on their
@@ -270,7 +271,8 @@ a receiver can update the text is to be verified (section 8).
   "Delete". The delete dialog of an archived habit has no "Archive" button (section 7).
   Its "Archived goals" section is expanded, since it is the only goal content. After
   "Restore" (and the restore dialog, if any) the view becomes the ordinary edit form
-  of the restored habit.
+  of the restored habit. After "Archive" the form becomes the read-only view of the
+  archived habit; a message of the archiving (UI-MSG-TIMER-ARCHIVED) is shown there.
 - One form for creating and editing (UI-HABITFORM-SCREEN). The form has: name, direction (Build / Quit),
   measurement type; for Numeric also the unit (built-in or custom label) and the "+"
   step; last, an optional goal section, off by default: target value, period (day /
@@ -389,7 +391,8 @@ shows only figures that make sense for the habit (BHV-STATS-R2): total time and
 average per day for Duration, the number of occurrences for Binary, the sum and the
 average per day for Numeric. If the habit has goals with a counting period in the
 range, the card shows one block per goal (BHV-STATS-R4): the target and the period
-length, "achieved X of Y" and the average completion percentage. The current
+length, "achieved X of Y" and the average completion percentage. The blocks are listed
+with the newest goal first (the one added last). The current
 unfinished period is included and marked as provisional, with the days left
 (BHV-STATS-R6). When no goal period counts, or the range has no day of the habit's
 life, the card says so (BHV-STATS-R2, R4). Charts are out of v1 ("Ideas for later",
@@ -458,19 +461,25 @@ in the delete dialog does the same as archiving from the form menu (BHV-HABIT-R3
 System dialogs that the app opens but does not design: the notification permission
 request (BHV-TIMER-R5), the file picker of the import and the save dialog of the export.
 
-## 8. Verify before the plan
+## 8. Verify in the first tasks of the plan
 
-No UX point is open. To check in the official docs or on a prototype before the plan:
+No UX point is open. To check in the official docs or on a prototype; these are the
+first tasks (spikes) of the plan (user decision, 2026-11-24):
 1. The texts of the timer notification follow the app language set with the per-app
    locale API (BHV-LANG-R2; the official page does not say).
-2. A receiver of the notification's Stop can update the text of the notification in a
-   simple way (section 4).
+2. (Verified, see below.)
 3. Prototype, widths on a phone: the eight quick buttons of the Duration form in two
    rows of four (section 4); a Day row of a Duration habit with a running timer (name,
    Stop, session time, manual entry, value, ring); a Quit Duration ring with
    "1h20m/3h", the widest Duration text with seconds ("23h59m58s/23h59m59s", a daily
    limit is at most 24 h) and long numbers in a Quit ring such as "1250/2000"
    (section 3).
+4. The Undo snackbar is shown above the open entries sheet (section 4). A Material3
+   `ModalBottomSheet` may draw in its own window, above a snackbar host of the screen.
+   If so: a second snackbar host inside the sheet, fed by the same undo offer, or a
+   non-modal sheet (`docs/DESIGN.md`, App shell).
 
 Verified on 2026-11-23: the Compose Material3 time picker cannot disable hours, the
-date picker can disable days (section 4).
+date picker can disable days (section 4). Verified on 2026-11-24 (`docs/DESIGN.md`
+section 10, question 7): a receiver updates the notification text by calling
+`notify()` again with the same identifier (item 2).

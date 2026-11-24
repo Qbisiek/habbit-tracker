@@ -22,7 +22,8 @@ problems, explain why they matter and propose options. The user decides.
   don't know or check the official docs. Do not guess.
 
 ## Inputs
-- Always read first: CLAUDE.md, README.md, every file in docs/ except
+- Always read first, with the Read tool from disk (a copy of CLAUDE.md in your
+  context may be older than the file): CLAUDE.md, README.md, every file in docs/ except
   docs/reviews/, and every skill in .claude/skills/ (the skills define the
   rules the documents were written under, e.g. the design principles and the
   required section outline in design-interview).

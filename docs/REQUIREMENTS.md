@@ -148,9 +148,9 @@ not to this document.
 
 - App name (working title: "Habit Tracker").
 - Whether the texts of the timer notification follow the app language set with the
-  per-app language setting (BHV-LANG-R2; verify before the plan, `docs/UX.md`
-  section 8).
-- The open questions in `docs/DESIGN.md` section 10 (7, 12, 21) and the checks in
+  per-app language setting (BHV-LANG-R2; verified in the first tasks of the plan,
+  `docs/UX.md` section 8).
+- The open questions in `docs/DESIGN.md` section 10 and the checks in
   `docs/UX.md` section 8. Design questions.
 
 ## 6. Extensibility constraints
@@ -427,15 +427,16 @@ Rules:
   ones and those of archived goals) are computed again from the entries.
 - **BHV-ENTRY-R6a Undo of a deletion:** a deletion asks no confirmation and can be
   undone for a few seconds after it, also after the entries list is closed (Decision
-  86). The undo is withdrawn as soon as the habit gets a new entry on that day or is
-  archived or deleted, so it never creates a second binary entry on a day. Unmarking a
+  86). The undo is withdrawn as soon as the habit gets a new entry on a day that the
+  deleted entry covers, or is archived or deleted, so it never creates a second binary entry on a day. Unmarking a
   binary entry with the Day screen control offers no undo (marking again is the undo).
 - **BHV-ENTRY-R6b Time precision:** times of manual entries are entered and edited to
   the minute. The default times of a new manual entry are now cut to the whole minute.
   When an entry is edited, a time (hour and minute) that the user does not change
   keeps its seconds, also when only its date changes; a changed time, by typing, the
   picker or a quick button, gets 0 seconds. A time counts as changed when its hour
-  and minute at Save differ from the stored ones; a time changed and set back is not
+  and minute at Save differ from the stored ones or, for a Duration time, its offset
+  from UTC (in the repeated hour of a change to winter time); a time changed and set back is not
   changed (`docs/UX.md` section 1, "changed"). An entry added with "+" on today's date
   gets the current time with its seconds (on a past date, see BHV-ENTRY-R8); entries with equal times are listed in the order they were
   added.
@@ -456,7 +457,8 @@ Rules:
   period not completed yet is provisional). If several goals count a period that
   contains the date, the active goal is used when it counts that period; otherwise
   the goal with the latest first day (on equal first days the one with the shorter
-  period, then the one with the later last day, then the one archived later). If no
+  period, then the one with the later last day, then the one archived later; for goals
+  archived on the same day, the one added later). If no
   goal counts a period that contains the date (e.g. the date is in a period that has
   not started, before every goal, after the last goal ended, or in a period cut by a
   change), there is no indicator.
@@ -492,11 +494,11 @@ Rules:
   permission at the first timer start, not at first launch. After a refusal the timer
   works and a one-time message says that Stop is only available in the app. If the
   user dismisses the notification, the timer keeps running; the notification comes
-  back at the next start of the app (as it does after a phone restart or an app
-  update). After an import, notifications match the imported timers. If the file has
+  back the next time the app is opened or returns to the foreground (as it does after
+  a phone restart or an app update). After an import, notifications match the imported timers. If the file has
   running timers and the permission has never been requested, the import does not ask
   for it: the timers run without notifications and the same one-time message is
-  shown when the app is next opened.
+  shown the next time the app is opened or returns to the foreground.
 
 Today is Wed 11 Nov 2026 unless a row says otherwise.
 
@@ -539,6 +541,8 @@ Today is Wed 11 Nov 2026 unless a row says otherwise.
 | BHV-ENTRY-23c | As BHV-ENTRY-23a | The user taps +5 min under the end | The end is 10:50:00 (a changed time gets 0 seconds); the length is 49 min 43 s | user (2026-11-23) |
 | BHV-ENTRY-23d | As BHV-ENTRY-23a | The user types the end 10:50 and then 10:45 again | The end stays 10:45:42 (at Save the time is not changed); the length stays 45 min 25 s | user (2026-11-24) |
 | BHV-ENTRY-24 | Duration habit; it is 11:30:27 on 11 Nov | The user opens a new manual entry and taps -15 min on the start | Start 11:15:00, end 11:30:00 (defaults cut to the minute); length 15 min | user (2026-11-23) |
+| BHV-ENTRY-25 | Duration habit; device time zone Europe/Warsaw; today is 29 Mar 2026 (the clocks go forward at 02:00) | The user enters a manual entry 02:30 - 04:00 | The start is 03:30 (02:30 does not exist that day); the length is 30 min | assistant (new) |
+| BHV-ENTRY-26 | Duration entry on 25 Oct 2026 02:10 - 02:50 in Europe/Warsaw, both in the second, repeated 02:xx hour | The user changes only the end to 02:55 | The start is unchanged; the length is 45 min | assistant (new) |
 | BHV-DAY-1 | The Day screen follows today (the user has not picked a date); it is 23:59 on 11 Nov | Midnight passes | The screen shows 12 Nov | user (Dec. 58) |
 | BHV-DAY-2 | The user picked 5 Nov on the Day screen | Midnight passes | The screen still shows 5 Nov | user (Dec. 58) |
 | BHV-DAY-3 | Duration habit with a manual entry of 30 min today and a running timer started 20 min ago | The user looks at the Day screen | The value of today is 50 min and keeps growing while the timer runs | user (Dec. 45, 56) |
@@ -572,10 +576,11 @@ Today is Wed 11 Nov 2026 unless a row says otherwise.
 | BHV-TIMER-10c | As BHV-TIMER-10a, right after discarding; "Undo" is still offered | The user starts a new timer of the habit at 10:46 | The new timer runs from 10:46; the "Undo" is withdrawn, so there is never a second timer | user (Dec. 86) |
 | BHV-TIMER-11a | As BHV-TIMER-1 (timer started 23:30 on 10 Nov, now 00:20 on 11 Nov) | The user opens the entries list of the habit on 10 Nov | The running timer is listed as a live item with Stop and Discard | user (2026-11-23) |
 | BHV-TIMER-11b | As BHV-TIMER-11a | The user taps Stop in the entries list of 10 Nov | One entry 23:30 - 00:20, as when stopped from 11 Nov (BHV-TIMER-2) | user (2026-11-23) |
-| BHV-NOTIF-1 | A running timer with a notification | The user dismisses the notification | The timer keeps running; the notification comes back at the next start of the app | user (Dec. 47, 57) |
+| BHV-NOTIF-1 | A running timer with a notification | The user dismisses the notification | The timer keeps running; the notification comes back the next time the app is opened or returns to the foreground | user (Dec. 47, 57; 2026-11-24) |
 | BHV-NOTIF-2 | The app has running timers and notifications | An import replaces all data | There is one notification per imported running timer; all other notifications are removed | user (Dec. 57) |
 | BHV-NOTIF-3 | The notification permission has not been decided | The user starts the first timer and refuses the permission | The timer works; a one-time message says Stop is only available in the app | user (Dec. 47) |
-| BHV-NOTIF-4 | The notification permission has never been requested; a valid file has a running timer of a duration habit | The user imports the file | The import asks nothing about the permission; the timer runs without a notification; the one-time message that Stop is only available in the app is shown when the app is next opened | assistant (new) |
+| BHV-NOTIF-4 | The notification permission has never been requested; a valid file has a running timer of a duration habit | The user imports the file | The import asks nothing about the permission; the timer runs without a notification; the one-time message that Stop is only available in the app is shown the next time the app is opened or returns to the foreground | assistant (new); user (2026-11-24) |
+| BHV-NOTIF-5 | The notification permission has never been requested | The user starts the first timer at 10:00:00 and grants the permission at 10:00:15 | The timer runs from 10:00:00 and its notification is shown at once | assistant (new) |
 
 ### 7.5 Statistics
 
@@ -788,7 +793,8 @@ Rules:
     BHV-GOALVAL-R1); a numeric entry has a date and a time; a goal starts on the
     first day of a period of its length; the last day of an active goal for N
     periods is the last day of its N-th period; the last day of an archived goal is
-    any day not before its first day; every habit and goal has a creation day (an
+    any day not before its first day (for a goal for N periods, a later day than the
+    last day of its N-th period counts as that day); every habit and goal has a creation day (an
     imported one keeps it from the file);
   - a habit satisfies BHV-HABIT-R1 (name, unit, step);
   - a binary habit has at most one entry per day; the shape of every entry matches
@@ -816,6 +822,8 @@ Rules:
 | BHV-IMPORT-7 | A file with two entries of one binary habit on the same day | The user picks it | Rejected; current data unchanged | assistant (new) |
 | BHV-IMPORT-8 | A file with an active goal on an archived habit | The user picks it | Rejected; current data unchanged | assistant (new) |
 | BHV-IMPORT-9 | A file from a newer, unsupported version, or a file that is not a backup | The user picks it | Rejected with a message; current data unchanged | user (Dec. 78) |
+| BHV-IMPORT-9a | A backup file of this app that was cut off | The user picks it | Rejected as damaged; current data unchanged | assistant (new) |
+| BHV-IMPORT-9b | A file that is not JSON (e.g. a photo) | The user picks it | Rejected as not a backup of this app; current data unchanged | assistant (new) |
 | BHV-IMPORT-10 | A valid file | The user sees the summary and chooses *Cancel* | Nothing changes | user (Dec. 78) |
 | BHV-IMPORT-11 | The app has habit "Reading" with 5 entries; the file has habit "Reading" (created 10 Nov) with 3 entries and a weekly goal; the existing "Reading" was created 9 Nov | The user chooses *Add to existing* | The app has two habits "Reading": the existing one still has its 5 entries and its goals unchanged; the new one has 3 entries and the goal and keeps its creation day 10 Nov from the file. The existing one is listed first (older creation day) | user (2026-11-13) |
 | BHV-IMPORT-12 | The app has habits; the file has a running timer of a duration habit | The user chooses *Add to existing* | The imported habit has a running timer; there is one notification per running timer, existing and imported | user (2026-11-13) |
@@ -838,7 +846,7 @@ section 5; no settings screen). It uses the per-app language API of Android (ava
 from Android 13, the minimum version, REQ-C3), so the same choice can be made in the
 system settings of the app (verified in the official Android documentation, 2026-11-16).
 The documentation does not say whether the texts of the timer notifications follow it;
-this must be verified before the plan.
+this is verified in the first tasks of the plan (`docs/UX.md` section 8).
 
 Rules:
 - **BHV-LANG-R1 Default:** until the user chooses a language in the app, the app
