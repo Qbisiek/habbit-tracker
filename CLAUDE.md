@@ -8,7 +8,10 @@ project: the goal is to practice a structured AI-assisted workflow.
 - Phases: requirements -> design -> plan -> implementation.
   Artifacts: docs/REQUIREMENTS.md, docs/DESIGN.md, docs/PLAN.md, android/.
 - The user is the gate between phases. Never start the next phase without
-  explicit approval. Do not chain skills or agents on your own.
+  explicit approval. Do not chain skills or agents on your own. The only
+  exception is the design-loop skill (designer + docs-reviewer rounds): only
+  when the user starts it, only inside one phase, and the loop never approves
+  a document or starts the next phase.
 - Never run git commit or git push. The user reviews diffs and commits.
 - Before writing a file, briefly explain what it contains and why.
 - Session state: docs/STATUS.md holds the current state (phase and gate, what

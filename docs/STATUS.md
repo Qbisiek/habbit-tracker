@@ -79,9 +79,22 @@ Last updated: 2026-11-24.
    habit on the archiving day (reactivation, BHV-HABIT-R3) in the Data operations; review of
    the component diagram (arrow labels, Decision 71, restore as a Data operation).
 3. **CLAUDE.md:** the rule for the designer + reviewer loop (only inside one phase and
-   only when the user starts it; the gate between phases stays). First check in the
-   official docs whether a subagent can start another subagent (not known); if not, the
-   main session runs the loop. Lesson: do not ask `docs-reviewer` to read earlier
+   only when the user starts it; the gate between phases stays). Checked in the
+   official docs 2026-11-24 (code.claude.com/docs/en/sub-agents, /skills): a subagent
+   can start subagents (default up to 3 levels, `Agent` in its `tools`); a finished
+   subagent can be continued with its context via `SendMessage`; a skill with
+   `context: fork` runs one subagent, no documented loop feature. Decided and written
+   2026-11-24: the main session runs the loop through the skill `design-loop`
+   (`.claude/skills/design-loop/SKILL.md`) with the new agent `designer`
+   (`.claude/agents/designer.md`) and a fresh `docs-reviewer` per round; the scope is
+   always the whole design (the designer first checks the existing parts against the
+   approved REQUIREMENTS and UX), the TO DESIGN items are only the focus; stop when
+   no Blocking or Important finding is left, at most 3 rounds; the designer records
+   questions in `docs/DESIGN.md` section 10 and goes on (blocking ones with an
+   assessment, options and a chosen assumption, by the priorities in its
+   definition); it may reject a finding with a reason. CLAUDE.md has the exception
+   to "do not chain". Not tried yet: the first run is the test (does `SendMessage`
+   continue the designer; does the reviewer leave the awaiting questions alone). Lesson: do not ask `docs-reviewer` to read earlier
    reports (its definition forbids it); give it the list of fixes in the prompt or match
    "new vs already open" in the main session.
 4. **Reviewer improvement:** the reference check is saved as
@@ -106,6 +119,6 @@ Last updated: 2026-11-24.
 ## To resume
 
 1. Ask whether the uncommitted changes listed above were committed.
-2. The user chose (2026-11-24) not to fill the TO DESIGN parts by hand but to build
-   the designer + reviewer loop first (Next steps 3), which then works on them.
+2. The loop is ready (Next steps 3). The user starts it with `/design-loop` on the
+   TO DESIGN parts (Next steps 2); ask whether to start it.
 3. Do not start the plan phase.
