@@ -8,76 +8,64 @@ Last updated: 2026-11-24.
 
 ## Where we are
 
-- Phase: design done. Gates:
-  - `docs/REQUIREMENTS.md`: approved by the user 2026-11-24.
-  - `docs/UX.md`: approved by the user 2026-11-24.
-  - `docs/DESIGN.md`, `docs/DESIGN-DECISIONS.md`, `docs/diagrams/components.drawio`:
-    approved by the user 2026-11-24 (after a review of Decisions 90-98; the user
-    checked the diagram in draw.io; S3 done: all "awaits the user" marks replaced).
-- Review reports of the design loops deleted from `docs/reviews/` (2026-11-24);
-  their deferred findings are listed below.
-- Next phase: plan (`docs/PLAN.md`). Not started; it needs the user's explicit start.
-- Uncommitted: the plan tooling (see "Plan tooling" below), `.gitignore`,
-  `CLAUDE.md` (Layout), the deletion of `.claude/agents/tmp-planner.md`, this file.
+- Phase: plan (`docs/PLAN.md`), started by the user with `/plan-interview` on
+  2026-11-24. Session interrupted at the user's request after the tasks of M3.
+- Gates: `docs/REQUIREMENTS.md`, `docs/UX.md`, `docs/DESIGN.md` (with
+  `docs/DESIGN-DECISIONS.md` and the diagram) approved by the user on 2026-11-24.
+  `docs/PLAN.md` is a DRAFT, not approved.
+- Uncommitted: `docs/PLAN.md` (new), this file, two fixes of the dashboard
+  (`plan_dashboard.py` and its template: the template opened directly shows a hint
+  instead of broken text; the whole multi-line STATUS banner is shown).
+- Plan tooling committed by the user: the `plan-interview` skill,
+  `.claude/scripts/req_index.py`, `.claude/scripts/plan_dashboard.py` (+ template),
+  `docs/dashboard/` in `.gitignore`.
 
-## Plan tooling (agreed with the user 2026-11-24)
+## Plan: agreed so far (user, 2026-11-24)
 
-- `.claude/skills/plan-interview/SKILL.md`: the plan phase as a conversation in the
-  main session (not an agent); progressive reading; `docs/PLAN.md` written during the
-  conversation with a DRAFT banner; task status `todo` / `in progress` / `done` /
-  `dropped`; effort S/M/L/XL = 1/2/4/8 points.
-- `docs/PLAN.md` is the only source of truth; the dashboard is only a view of it.
-- `.claude/scripts/req_index.py`: index of requirement IDs; `--coverage` lists the IDs
-  that need a task: REQ-M*, REQ-S*, REQ-C*, REQ-SC* and all BHV-* (not Won't, not
-  REQ-X*).
-- `.claude/scripts/plan_dashboard.py` (+ template `plan_dashboard.html`): writes
-  `docs/dashboard/index.html` (not in git); Mermaid 12.3.0 downloaded once to
-  `docs/dashboard/vendor/` (not in git, SHA-256 checked). Page: summary cards, next
-  up, collapsible milestones, per task "waits on · blocks" (open effort of all
-  transitive dependencies / dependents), click a task for details and a dependency
-  graph, requirement coverage: done (all covering tasks done), in progress, planned,
-  missing, deferred. Tested on a sample plan only.
-
-## Agreed at the approval (2026-11-24)
-
-- Decisions 90-98 approved without changes. The user's questions answered: 91
-  (*Replace all* keeps the UUIDs of the file), 93 (the undo offer is plain state in a
-  pure Kotlin Domain object, a `StateFlow`; the wait goes through the Clock port).
-- Decisions 73, 76, 79, 81: the user added reasons to some rows and adds no more;
-  the remaining placeholders stay.
+- Level 1 (milestones) confirmed: M1 skeleton and spikes; M2 numeric build end to end
+  without goals; M3 export and import; M4 breadth for the first habit (management,
+  Statistics, language switch); M5 goals and the quit direction; M6 goal changes and
+  history; M7 binary and duration with manual entries; M8 timer and notification; M9
+  success criteria and finishing.
+- Choices behind it: first habit kind numeric build (not binary, not duration with a
+  timer); the full data model and file format already in M3; goals (M5-M6) before more
+  habit kinds and the timer (M7-M8).
+- Level 2 (tasks) agreed for M1, M2, M3 (tables in `docs/PLAN.md`).
+  - Application ID / package: `kubisp.habittracker`.
+  - Spike prototypes live in a `spike` package of `app` and are removed in T1.8.
+  - Conventions (section in `docs/PLAN.md`): PL/EN texts in every UI task; the
+    navigation bar has only working tabs (Statistics from M4); the database is
+    recreated on a schema change until the first everyday version (at the latest M9),
+    then real migrations.
+  - Moved out of M3: the goal validity part of BHV-IMPORT-R4 goes to M5; the
+    notification sync and one-time message after an import (BHV-NOTIF-2, 4) and the
+    check that "Export and replace" fits the receiver time go to M8.
+- Not confirmed yet: effort, dependencies and Covers in the tables are proposals
+  until level 3; Covers lists only REQ-* IDs so far (BHV-* IDs come at level 3).
 
 ## Deferred (consciously, by the user)
 
-From the review of the second design loop (report deleted; the items are kept here):
-- M4 placeholders in Decisions 73, 76, 79, 81 (see above).
-- M5 diagram arrow App -> GUI / Platform services "creates" (Android creates the
-  Activity and the receiver).
+From the review of the second design loop (report deleted):
+- M4 placeholders in Decisions 73, 76, 79, 81.
+- M5 diagram arrow App -> GUI / Platform services "creates".
 - M7 UX 8 item 4 fallback vs "No screen subscribes to these streams".
 - M8 Map by topic in DESIGN has no Language entry.
 - S1 split the Domain tests sentence of DESIGN 8 by topic with BHV IDs.
 - S2 shorten "Resolved" 22-26 in DESIGN 10.
-- Assistant's note: Decision 92 bundles several decisions in one row; splitting it
-  would help readability (cosmetic).
-
-## Carried to the plan (first tasks, spikes)
-
-Listed in `docs/DESIGN.md` section 10: language of notification texts (UX 8 item 1),
-the API listing shown notifications (question 7), widths on a phone prototype (UX 8
-item 3), a snackbar above the modal bottom sheet (UX 8 item 4). Also questions 12 (app
-name) and 21 (iOS transfer setting of Auto Backup).
+- Decision 92 bundles several decisions in one row (cosmetic).
+Tooling, optional, later: a convergence rule for `/design-loop`; links for IDs
+(`BHV-*`, `Decision N`, `UI-*`) as Markdown anchors with a script.
 
 ## Next steps (the user gates every step)
 
-1. The user reviews and commits the plan tooling.
-2. Loop tooling, optional: a convergence rule for `/design-loop` (e.g. rounds only on
-   Blocking + new Important). Not decided.
-3. Links for IDs (user wants them, later): `BHV-*`, `Decision N`, `UI-*` as Markdown
-   links to `<a id>` anchors, with a script (could extend `check-refs.sh`). A separate
-   change.
-4. The user starts the plan phase with `/plan-interview`.
+1. The user reviews and commits `docs/PLAN.md` and this file.
+2. Continue `/plan-interview`: level 2 for M4, then M5-M9 (remember the items moved
+   to M5 and M8), then level 3 (effort, dependencies, Covers with BHV-* IDs), the
+   coverage check (`python .claude/scripts/req_index.py --coverage` and the
+   dashboard), `check-refs.sh`, approval.
 
 ## To resume
 
-1. Ask whether the plan tooling was committed and whether the dashboard needs changes.
-2. Ask about steps 2-3, then whether to start the plan phase. Do not start it without
-   the user's explicit approval.
+1. Ask whether `docs/PLAN.md` was committed.
+2. The user restarts `/plan-interview`; the skill finds the existing `docs/PLAN.md`
+   and must ask whether to continue it (continue: from the tasks of M4).

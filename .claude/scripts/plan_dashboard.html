@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}} - progress</title>
+<!-- Template of plan_dashboard.py. Generated pages are not in git. -->
+<style>
+:root {
+  --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #646d7e; --line: #e3e6eb;
+  --accent: #3b6fd8; --done: #2e9e6b; --doing: #d99a1e; --todo: #8a93a3; --missing: #d2493f;
+  --deferred: #8a6bc9; --track: #e9ecf1; --hover: #f1f4f9; --sel: #e8effc;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171d; --card: #1c2028; --text: #e4e7ec; --muted: #9aa3b2; --line: #2c323d;
+    --accent: #6f9bf0; --done: #46b985; --doing: #e7b04a; --todo: #7d8696; --missing: #e8675d;
+    --deferred: #a88be0; --track: #2a2f39; --hover: #232833; --sel: #23304a;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 22px; margin: 0 0 4px; }
+h2 { font-size: 15px; margin: 28px 0 10px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .04em; }
+.sub { color: var(--muted); font-size: 13px; }
+.problems { border: 1px solid var(--missing); border-left-width: 4px; background: var(--card);
+  padding: 10px 14px; border-radius: 8px; margin: 16px 0; }
+.problems ul { margin: 6px 0 0; padding-left: 18px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;
+  margin-top: 18px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.card .k { color: var(--muted); font-size: 12px; }
+.card .v { font-size: 26px; font-weight: 650; margin: 2px 0 6px; }
+.card .v small { font-size: 13px; font-weight: 400; color: var(--muted); }
+.bar { height: 8px; background: var(--track); border-radius: 4px; overflow: hidden; display: flex; }
+.bar > i { display: block; height: 100%; }
+.bar .d { background: var(--done); } .bar .p { background: var(--doing); }
+.list { background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+.list .row { display: flex; gap: 10px; align-items: baseline; padding: 9px 14px;
+  border-top: 1px solid var(--line); cursor: pointer; }
+.list .row:first-child { border-top: 0; }
+.list .row:hover { background: var(--hover); }
+.empty { padding: 12px 14px; color: var(--muted); }
+.id { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; white-space: nowrap; }
+.chip { display: inline-block; font-size: 11.5px; padding: 1px 8px; border-radius: 10px;
+  white-space: nowrap; border: 1px solid currentColor; }
+.s-done { color: var(--done); } .s-in-progress { color: var(--doing); }
+.s-todo, .s-planned { color: var(--todo); } .s-dropped { color: var(--todo); opacity: .6; }
+.s-missing { color: var(--missing); } .s-deferred { color: var(--deferred); }
+.s-ready { color: var(--accent); }
+details.ms { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  margin-bottom: 10px; }
+details.ms > summary { list-style: none; cursor: pointer; padding: 12px 14px; display: grid;
+  grid-template-columns: 1fr 160px auto; gap: 14px; align-items: center; }
+details.ms > summary::-webkit-details-marker { display: none; }
+details.ms > summary .name { font-weight: 600; }
+details.ms > summary .name::before { content: "\25B8"; display: inline-block; width: 16px;
+  color: var(--muted); transition: transform .15s; }
+details.ms[open] > summary .name::before { transform: rotate(90deg); }
+.ms-body { padding: 0 14px 12px; }
+.ms-meta { display: grid; grid-template-columns: max-content 1fr; gap: 2px 10px; margin: 0 0 10px;
+  font-size: 13px; }
+.ms-meta dt { color: var(--muted); } .ms-meta dd { margin: 0; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px;
+  border-bottom: 1px solid var(--line); padding: 6px 8px; }
+td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr.task { cursor: pointer; } tr.task:hover td { background: var(--hover); }
+tr.task.sel td { background: var(--sel); }
+tr.task.dropped td { opacity: .55; text-decoration: line-through; }
+.weight { white-space: nowrap; color: var(--muted); font-size: 12.5px; }
+.weight b { color: var(--text); font-weight: 600; }
+tr.detail td { background: var(--bg); padding: 12px; }
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.detail-grid h4 { margin: 0 0 4px; font-size: 12px; color: var(--muted); font-weight: 500; }
+.detail-grid ul { margin: 0; padding-left: 16px; }
+.detail-grid a, .row a { color: var(--accent); cursor: pointer; text-decoration: none; }
+.graph { margin-top: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px; overflow-x: auto; text-align: center; }
+.graph svg { max-width: 100%; height: auto; }
+.graph .node { cursor: pointer; }
+details.reqs > summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.filters button { font: inherit; font-size: 12.5px; background: var(--card); color: var(--text);
+  border: 1px solid var(--line); border-radius: 14px; padding: 3px 12px; cursor: pointer; }
+.filters button.on { border-color: var(--accent); background: var(--sel); }
+.sec { padding: 8px 14px 4px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); }
+.req { display: grid; grid-template-columns: 130px 90px 1fr auto; gap: 10px; padding: 5px 14px;
+  align-items: baseline; }
+.req .t { color: var(--muted); font-size: 12.5px; }
+@media (max-width: 640px) {
+  details.ms > summary { grid-template-columns: 1fr auto; }
+  details.ms > summary .bar { display: none; }
+  .hide-sm { display: none; }
+  .req { grid-template-columns: 1fr auto; }
+  .req .t, .req .tasks { grid-column: 1 / -1; }
+}
+</style>
+<!--MERMAID-->
+</head>
+<body>
+<main id="app"><p>This is the template of the dashboard. Run
+<code>python .claude/scripts/plan_dashboard.py</code> and open
+<code>docs/dashboard/index.html</code>.</p></main>
+<script>
+const DATA = /*DATA*/null/*END*/;
+if (!DATA) throw new Error("Template opened directly; see the text on the page.");
+const P = DATA.points;
+const T = DATA.tasks;
+const live = id => T[id] && T[id].status !== "dropped";
+const pts = id => P[T[id].effort] || 0;
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c =>
+  ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const cls = s => "s-" + s.replace(/\s+/g, "-");
+const chip = s => `<span class="chip ${cls(s)}">${esc(s)}</span>`;
+
+// Dependents (reverse edges) and transitive closures.
+const rdeps = {};
+for (const [id, t] of Object.entries(T)) for (const d of t.deps) (rdeps[d] ||= []).push(id);
+function closure(id, next) {
+  const seen = new Set(), stack = [...next(id)];
+  while (stack.length) {
+    const x = stack.pop();
+    if (seen.has(x) || !live(x)) continue;
+    seen.add(x); stack.push(...next(x));
+  }
+  return seen;
+}
+const ancestors = id => closure(id, x => T[x] ? T[x].deps : []);
+const descendants = id => closure(id, x => rdeps[x] || []);
+const openPts = set => [...set].filter(x => T[x].status !== "done").reduce((a, x) => a + pts(x), 0);
+const ready = id => T[id].status === "todo" && T[id].deps.every(d => T[d] && T[d].status === "done");
+
+// Requirements: state from the tasks that cover them.
+const coveredBy = {};
+for (const [id, t] of Object.entries(T)) if (live(id)) for (const c of t.covers) (coveredBy[c] ||= []).push(id);
+const deferred = new Set(DATA.deferred);
+function reqState(rid) {
+  const ts = coveredBy[rid] || [];
+  if (!ts.length) return deferred.has(rid) ? "deferred" : "missing";
+  if (ts.every(x => T[x].status === "done")) return "done";
+  if (ts.some(x => T[x].status !== "todo")) return "in progress";
+  return "planned";
+}
+const REQS = DATA.reqs.map(r => ({...r, state: reqState(r.id)}));
+
+function msStats(ms) {
+  const ids = ms.tasks.filter(live);
+  const total = ids.reduce((a, x) => a + pts(x), 0);
+  const done = ids.filter(x => T[x].status === "done").reduce((a, x) => a + pts(x), 0);
+  const doing = ids.filter(x => T[x].status === "in progress").reduce((a, x) => a + pts(x), 0);
+  return {total, done, doing, n: ids.length, nDone: ids.filter(x => T[x].status === "done").length};
+}
+const pct = (a, b) => b ? Math.round(100 * a / b) : 0;
+const bar = (s) => `<div class="bar"><i class="d" style="width:${pct(s.done, s.total)}%"></i>` +
+  `<i class="p" style="width:${pct(s.doing, s.total)}%"></i></div>`;
+
+function render() {
+  const all = {total: 0, done: 0, doing: 0, n: 0, nDone: 0};
+  const stats = DATA.milestones.map(ms => { const s = msStats(ms); for (const k in all) all[k] += s[k]; return s; });
+  const curIdx = DATA.milestones.findIndex((ms, i) => stats[i].nDone < stats[i].n);
+  const cur = DATA.milestones[curIdx];
+  const counts = {};
+  for (const r of REQS) counts[r.state] = (counts[r.state] || 0) + 1;
+  const inProg = Object.keys(T).filter(x => T[x].status === "in progress");
+  const next = [...inProg, ...Object.keys(T).filter(ready)].slice(0, 6);
+
+  let h = `<h1>${esc(DATA.title)}</h1>
+    <div class="sub">${esc(DATA.status)}${DATA.status ? " · " : ""}generated ${esc(DATA.generated)}
+    from docs/PLAN.md</div>`;
+  if (DATA.problems.length) h += `<div class="problems"><b>Problems in the plan (${DATA.problems.length})</b>
+    <ul>${DATA.problems.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>`;
+  h += `<div class="cards">
+    <div class="card"><div class="k">Progress (effort)</div>
+      <div class="v">${pct(all.done, all.total)}% <small>${all.done} / ${all.total} pts</small></div>${bar(all)}</div>
+    <div class="card"><div class="k">Tasks done</div>
+      <div class="v">${all.nDone} <small>of ${all.n}, ${inProg.length} in progress</small></div></div>
+    <div class="card"><div class="k">Current milestone</div>
+      ${cur ? `<div class="v">M${cur.num} <small>${pct(stats[curIdx].done, stats[curIdx].total)}% · ${esc(cur.name)}</small></div>${bar(stats[curIdx])}`
+            : `<div class="v">${DATA.milestones.length ? "All done" : "-"}</div>`}</div>
+    <div class="card"><div class="k">Requirements</div>
+      <div class="v">${counts.done || 0} <small>done of ${REQS.length}</small></div>
+      <div class="sub"><span class="s-missing">${counts.missing || 0} missing</span> ·
+        ${counts["in progress"] || 0} in progress · ${counts.planned || 0} planned
+        ${counts.deferred ? ` · ${counts.deferred} deferred` : ""}</div></div>
+  </div>`;
+
+  h += `<h2>Next up</h2><div class="list">` + (next.length ? next.map(id =>
+    `<div class="row" data-go="${id}"><span class="id">${id}</span>
+      ${chip(T[id].status === "todo" ? "ready" : T[id].status)}
+      <span style="flex:1">${esc(T[id].title)}</span><span class="weight">${T[id].effort}</span></div>`).join("")
+    : `<div class="empty">Nothing ready: ${all.n ? "every open task waits on others" : "no tasks yet"}.</div>`) + `</div>`;
+
+  h += `<h2>Milestones</h2>`;
+  DATA.milestones.forEach((ms, i) => {
+    const s = stats[i];
+    h += `<details class="ms" id="ms${ms.num}" ${i === curIdx ? "open" : ""}>
+      <summary><span class="name">M${ms.num} - ${esc(ms.name)}</span>${bar(s)}
+        <span class="sub">${s.nDone}/${s.n} tasks · ${s.done}/${s.total} pts</span></summary>
+      <div class="ms-body"><dl class="ms-meta">
+        ${ms.goal ? `<dt>Goal</dt><dd>${esc(ms.goal)}</dd>` : ""}
+        ${ms.manualTest ? `<dt>Manual test</dt><dd>${esc(ms.manualTest)}</dd>` : ""}</dl>
+      <table><thead><tr><th>ID</th><th>Task</th><th>Status</th><th>Effort</th>
+        <th class="hide-sm" title="Open effort of all tasks it waits on / that wait on it">Waits on · blocks</th></tr></thead>
+      <tbody>${ms.tasks.map(id => taskRow(id)).join("")}</tbody></table></div></details>`;
+  });
+  if (!DATA.milestones.length) h += `<div class="list"><div class="empty">No milestones yet.</div></div>`;
+
+  h += `<h2>Requirements</h2><details class="reqs"><summary>Coverage of ${REQS.length} requirement IDs</summary>
+    <div class="filters">${["missing", "planned", "in progress", "done", "deferred", "all"].map(f =>
+      `<button data-filter="${f}" class="${f === reqFilter ? "on" : ""}">${f}${f === "all" ? "" : ` (${counts[f] || 0})`}</button>`).join("")}</div>
+    <div class="list" id="reqlist"></div></details>`;
+  document.getElementById("app").innerHTML = h;
+  renderReqs();
+}
+
+function taskRow(id) {
+  const t = T[id];
+  const ready_ = ready(id);
+  const w = live(id) ? `<b>${openPts(ancestors(id))}</b> · <b>${openPts(descendants(id))}</b>` : "";
+  return `<tr class="task ${t.status === "dropped" ? "dropped" : ""}" data-task="${id}">
+    <td class="id">${id}</td><td>${esc(t.title)}</td>
+    <td>${chip(ready_ ? "ready" : t.status)}</td><td>${t.effort}</td>
+    <td class="weight hide-sm">${w}</td></tr>`;
+}
+
+let reqFilter = "missing";
+function renderReqs() {
+  const el = document.getElementById("reqlist");
+  if (!el) return;
+  const list = REQS.filter(r => reqFilter === "all" || r.state === reqFilter);
+  let h = "", sec = null;
+  for (const r of list) {
+    if (r.section !== sec) { sec = r.section; h += `<div class="sec">${esc(sec)}</div>`; }
+    const ts = coveredBy[r.id] || [];
+    h += `<div class="req"><span class="id">${r.id}</span>${chip(r.state)}
+      <span class="t">${esc(r.title)}</span>
+      <span class="tasks">${ts.map(x => `<a class="id" data-go="${x}">${x}</a>`).join(" ")}</span></div>`;
+  }
+  el.innerHTML = h || `<div class="empty">None.</div>`;
+}
+
+// Task detail with the dependency graph.
+let selected = null, graphSeq = 0;
+const reqTitle = Object.fromEntries(DATA.reqs.map(r => [r.id, r.title]));
+const link = x => `<a class="id" data-go="${x}">${x}</a>`;
+function openTask(id) {
+  document.querySelectorAll("tr.detail").forEach(e => e.remove());
+  document.querySelectorAll("tr.task.sel").forEach(e => e.classList.remove("sel"));
+  if (selected === id) { selected = null; return; }
+  selected = id;
+  const t = T[id], tr = document.querySelector(`tr.task[data-task="${CSS.escape(id)}"]`);
+  if (!tr) return;
+  tr.closest("details").open = true;
+  tr.classList.add("sel");
+  const anc = ancestors(id), desc = descendants(id);
+  const d = document.createElement("tr");
+  d.className = "detail";
+  d.innerHTML = `<td colspan="5"><div class="detail-grid">
+    <div><h4>Waits on (${openPts(anc)} open pts in ${[...anc].filter(x => T[x].status !== "done").length} tasks)</h4>
+      ${t.deps.length ? `<ul>${t.deps.map(x => `<li>${link(x)} ${T[x] ? esc(T[x].title) + " " + chip(T[x].status) : "(unknown)"}</li>`).join("")}</ul>` : `<span class="sub">nothing</span>`}</div>
+    <div><h4>Blocks (${openPts(desc)} open pts in ${desc.size} tasks)</h4>
+      ${(rdeps[id] || []).length ? `<ul>${rdeps[id].map(x => `<li>${link(x)} ${esc(T[x].title)}</li>`).join("")}</ul>` : `<span class="sub">nothing</span>`}</div>
+    <div><h4>Covers</h4>
+      ${t.covers.length ? `<ul>${t.covers.map(c => `<li><span class="id">${esc(c)}</span> <span class="sub">${esc(reqTitle[c] || "")}</span></li>`).join("")}</ul>` : `<span class="sub">setup / spike</span>`}</div>
+    ${t.note ? `<div><h4>Note</h4>${esc(t.note)}</div>` : ""}
+  </div>${anc.size || desc.size ? `<div class="graph" id="graph"></div>` : ""}</td>`;
+  tr.after(d);
+  if (anc.size || desc.size) drawGraph(id, anc, desc);
+  tr.scrollIntoView({block: "nearest", behavior: "smooth"});
+}
+
+const dark = () => matchMedia("(prefers-color-scheme: dark)").matches;
+async function drawGraph(id, anc, desc) {
+  const el = document.getElementById("graph");
+  if (!window.mermaid) {
+    el.innerHTML = `<span class="sub">Graph unavailable (Mermaid not downloaded). Run the script online once.</span>`;
+    return;
+  }
+  const nodes = new Set([id, ...anc, ...desc]);
+  const nid = x => x.replace(/\./g, "_");
+  const label = x => `${x} ${T[x].title}`.replace(/["<>#]/g, " ").slice(0, 46);
+  const lines = ["flowchart LR"];
+  for (const x of nodes) lines.push(`  ${nid(x)}["${label(x)}"]:::${x === id ? "sel" : cls(T[x].status).slice(2).replace("-", "")}`);
+  for (const x of nodes) for (const dep of T[x].deps) if (nodes.has(dep)) lines.push(`  ${nid(dep)} --> ${nid(x)}`);
+  const c = dark()
+    ? {done: "#1f4a37,#46b985", inprogress: "#4d3c17,#e7b04a", todo: "#2a2f39,#7d8696", sel: "#23304a,#6f9bf0", text: "#e4e7ec"}
+    : {done: "#e3f4ec,#2e9e6b", inprogress: "#fbf0da,#d99a1e", todo: "#f1f3f6,#8a93a3", sel: "#e8effc,#3b6fd8", text: "#1d2330"};
+  for (const k of ["done", "inprogress", "todo", "sel"]) {
+    const [fill, stroke] = c[k].split(",");
+    lines.push(`  classDef ${k} fill:${fill},stroke:${stroke},color:${c.text},stroke-width:${k === "sel" ? 2.5 : 1.2}px`);
+  }
+  try {
+    mermaid.initialize({startOnLoad: false, securityLevel: "strict", theme: dark() ? "dark" : "default"});
+    const {svg, bindFunctions} = await mermaid.render("g" + (++graphSeq), lines.join("\n"));
+    el.innerHTML = svg;
+    bindFunctions?.(el);
+    el.querySelectorAll(".node").forEach(n => {
+      const m = /flowchart-(T\d+_\d+)-/.exec(n.id);
+      if (m) n.addEventListener("click", () => go(m[1].replace("_", ".")));
+    });
+  } catch (e) {
+    el.innerHTML = `<span class="sub">Graph error: ${esc(e.message || e)}</span>`;
+  }
+}
+
+// Clicks toggle a task (open, or close when it is already open); force always opens.
+function go(id, force = false) {
+  if (!T[id]) return;
+  if (force) selected = null;
+  openTask(id);
+}
+
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]");
+  if (g) { e.preventDefault(); go(g.dataset.go); return; }
+  const f = e.target.closest("[data-filter]");
+  if (f) {
+    reqFilter = f.dataset.filter;
+    document.querySelectorAll("[data-filter]").forEach(b => b.classList.toggle("on", b === f));
+    renderReqs(); return;
+  }
+  const tr = e.target.closest("tr.task");
+  if (tr) openTask(tr.dataset.task);
+});
+
+render();
+// Deep link: index.html#T1.3 opens that task.
+const openHash = () => { const id = decodeURIComponent(location.hash.slice(1)); if (T[id]) go(id, true); };
+addEventListener("hashchange", openHash);
+openHash();
+</script>
+</body>
+</html>

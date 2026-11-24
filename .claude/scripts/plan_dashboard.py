@@ -100,7 +100,13 @@ def parse_plan(path: Path) -> Plan:
             plan.title = line[2:].strip()
             continue
         if line.startswith("> **STATUS") and not plan.status:
-            plan.status = _plain(line.lstrip("> "))
+            # The banner is the whole blockquote, possibly several lines.
+            banner = []
+            for nxt in lines[n - 1:]:
+                if not nxt.startswith(">"):
+                    break
+                banner.append(nxt.lstrip("> ").strip())
+            plan.status = _plain(" ".join(banner))
             continue
         if m := _MILESTONE.match(line):
             current = Milestone(int(m.group(1)), m.group(2).strip())
@@ -240,10 +246,11 @@ def render(data: dict, has_mermaid: bool) -> str:
     template = (Path(__file__).resolve().parent / "plan_dashboard.html").read_text(encoding="utf-8")
     payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     mermaid_tag = '<script src="vendor/mermaid.min.js"></script>' if has_mermaid else ""
+    # Placeholders are a comment and a JS literal, so the template itself stays valid.
     return (template
             .replace("{{TITLE}}", html.escape(data["title"]))
-            .replace("{{MERMAID}}", mermaid_tag)
-            .replace("{{DATA}}", payload))
+            .replace("<!--MERMAID-->", mermaid_tag)
+            .replace("/*DATA*/null/*END*/", payload))
 
 
 def terminal_summary(data: dict) -> list[str]:
