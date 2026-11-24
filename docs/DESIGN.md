@@ -1,14 +1,10 @@
 # Design: Habit Tracker (working title)
 
-> **STATUS (2026-11-24): SECOND DESIGN LOOP DONE, AWAITING THE USER'S APPROVAL.** The
-> user-visible behavior (rules and scenarios) lives in `docs/REQUIREMENTS.md` section 7
-> (IDs `BHV-*`) and the screens in `docs/UX.md`; this document keeps the structure and
-> the mechanisms. Two design loops (2026-11-24) checked every part against the
-> approved requirements and UX and designed the former **TO DESIGN** items; none is
-> left. The user answered open questions 22 to 26 on 2026-11-24 (section 10). Still
-> open: the check of the revised component diagram in draw.io, and the approval of the
-> design with the designer's proposals (the new Decisions 90 to 98 and the revised
-> Decisions 32, 57, 59, 70 and 71). State and plan: `docs/STATUS.md`.
+> **STATUS (2026-11-24): APPROVED BY THE USER.** The user-visible behavior (rules and
+> scenarios) lives in `docs/REQUIREMENTS.md` section 7 (IDs `BHV-*`) and the screens
+> in `docs/UX.md`; this document keeps the structure and the mechanisms. The checks
+> carried to the plan phase are listed in section 10. State and plan:
+> `docs/STATUS.md`.
 
 ## Summary and map
 
@@ -924,8 +920,6 @@ rules are owned by `docs/REQUIREMENTS.md` section 7; the log gives the reasoning
 ## 10. Open questions
 
 The numbers are stable and never reused.
-
-**Awaiting the user (design loop):** none.
 
 **Carried to the plan phase** (none changes the structure of the design). By the
 user's decision of 2026-11-24 the checks below are the first tasks (spikes) of the
