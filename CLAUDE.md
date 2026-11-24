@@ -43,7 +43,9 @@ project: the goal is to practice a structured AI-assisted workflow.
     consciously deferred by the user before the plan phase starts. When all
     its findings are closed, the report is deleted; what was decided lives in
     the documents and in docs/STATUS.md.
-- .claude/skills/, .claude/agents/ - workflow tooling
+- .claude/skills/, .claude/agents/, .claude/scripts/ - workflow tooling
+  - .claude/scripts/check-refs.sh - mechanical reference check of docs/ (IDs,
+    Decisions, UI-*, section references); run it before a docs review
 - android/ - the Android project (does not exist yet)
 
 ## Scope

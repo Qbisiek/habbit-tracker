@@ -84,9 +84,9 @@ Last updated: 2026-11-24.
    main session runs the loop. Lesson: do not ask `docs-reviewer` to read earlier
    reports (its definition forbids it); give it the list of fixes in the prompt or match
    "new vs already open" in the main session.
-4. **Reviewer improvement** (discussed, not decided): save the mechanical reference
-   check of this session as a script in the repo, run before a review; several passes
-   with different lenses.
+4. **Reviewer improvement:** the reference check is saved as
+   `.claude/scripts/check-refs.sh` (2026-11-24, listed in CLAUDE.md). Still only
+   discussed: several review passes with different lenses.
 5. **Links for IDs** (user wants them, later): references like `BHV-HABIT-R4`,
    `Decision N`, `UI-*` as Markdown links to their definition (`<a id>` anchors). About
    600 references, so only with a script (could be the same as step 4); the user reads
@@ -106,6 +106,6 @@ Last updated: 2026-11-24.
 ## To resume
 
 1. Ask whether the uncommitted changes listed above were committed.
-2. Ask the user which next step to take (Next steps 2-5); the recommended one is 2,
-   the new design content of `docs/DESIGN.md`.
+2. The user chose (2026-11-24) not to fill the TO DESIGN parts by hand but to build
+   the designer + reviewer loop first (Next steps 3), which then works on them.
 3. Do not start the plan phase.
