@@ -38,9 +38,11 @@ project: the goal is to practice a structured AI-assisted workflow.
     Workflow, "Session state")
   - docs/DESIGN-DECISIONS.md - decisions log of the design (cited as "Decision N")
   - docs/diagrams/ - architecture diagrams (components.drawio)
-  - docs/reviews/ - reports from docs-reviewer. Open findings of the latest
-    report must be resolved or consciously deferred by the user before the
-    plan phase starts.
+  - docs/reviews/ - the current report from docs-reviewer, not in git
+    (.gitignore). Open findings of the latest report must be resolved or
+    consciously deferred by the user before the plan phase starts. When all
+    its findings are closed, the report is deleted; what was decided lives in
+    the documents and in docs/STATUS.md.
 - .claude/skills/, .claude/agents/ - workflow tooling
 - android/ - the Android project (does not exist yet)
 

@@ -1,9 +1,8 @@
 # Requirements: Habit Tracker (working title)
 
-> **STATUS (2026-11-14): APPROVED by the user.** The document was reopened after
-> an earlier approval and revised on 2026-11-13; `docs-reviewer` reviewed it three
-> times and its findings were applied. Plan and next steps: `docs/STATUS.md`. Open
-> points: section 5.
+> **STATUS (2026-11-24): APPROVED.** Approved by the user on 2026-11-14; amended with
+> the UX design on 2026-11-16, 2026-11-23 and 2026-11-24 and re-approved on
+> 2026-11-24. Open points: section 5.
 
 ## Map
 
@@ -18,7 +17,7 @@
 | 7.1 | Evaluation of a goal period | BHV-EVAL-* | M2, M3, M8c, SC3 |
 | 7.2 | Goals: start, change, archive (rules R1-R7, R4a) | BHV-GOAL-* | M3 |
 | 7.3 | Periods and goal duration (rules R1-R2) | BHV-PERIOD-* | M3 |
-| 7.4 | Day, entries, timer, notifications (rules ENTRY-R1-R8, DAY-R1-R2, TIMER-R1-R5) | BHV-ENTRY-*, BHV-DAY-*, BHV-TIMER-*, BHV-NOTIF-* | M4, M5, M6, M7, S3 |
+| 7.4 | Day, entries, timer, notifications (rules ENTRY-R1-R8 with R6a, R6b, DAY-R1-R2, TIMER-R1-R5) | BHV-ENTRY-*, BHV-DAY-*, BHV-TIMER-*, BHV-NOTIF-* | M4, M5, M6, M7, S3 |
 | 7.5 | Statistics (rules R1-R7) | BHV-STATS-* | M8a-d, SC2 |
 | 7.6 | Habits and goal validation (rules GOALVAL-R1, HABIT-R1-R4) | BHV-GOALVAL-*, BHV-HABIT-* | M1, M2, M3, M6, M7, S2 |
 | 7.7 | Export and import (rules EXPORT-R1, IMPORT-R1-R4) | BHV-EXPORT-*, BHV-IMPORT-* | S1, SC1 |
@@ -148,11 +147,11 @@ not to this document.
 ## 5. Open questions
 
 - App name (working title: "Habit Tracker").
-- Where the language switch lives (the app has no settings screen yet), and whether
-  the Android per-app language setting can be used (verify in the official docs
-  before the plan). UX question (`docs/UX.md` section 7).
-- The open questions in `docs/DESIGN.md` section 10 (7, 12, 21) and in
-  `docs/UX.md` section 7. Design questions.
+- Whether the texts of the timer notification follow the app language set with the
+  per-app language setting (BHV-LANG-R2; verify before the plan, `docs/UX.md`
+  section 8).
+- The open questions in `docs/DESIGN.md` section 10 (7, 12, 21) and the checks in
+  `docs/UX.md` section 8. Design questions.
 
 ## 6. Extensibility constraints
 
@@ -211,8 +210,9 @@ row is one test.
 - For a build habit the goal is a target to reach (at least). For a quit habit
   the goal is a limit not to exceed (at most, possibly 0).
 - The **Source** column says who decided: "user" (a decision of the user, with the
-  number in `docs/DESIGN-DECISIONS.md`) or "assistant" (a proposal of
-  the assistant, confirmed by the user on 2026-11-13 or 2026-11-14).
+  number in `docs/DESIGN-DECISIONS.md` or the date of the session where it was
+  decided) or "assistant" (a proposal of the assistant, confirmed by the user; "(new)"
+  marks a row the assistant added without an earlier decision behind it).
 
 ### 7.1 Evaluation of a goal period
 
@@ -382,9 +382,10 @@ Today is Wed 11 Nov 2026 unless a row says otherwise.
 
 ### 7.4 Day, entries, timer and notifications
 
-Not in this block: the defaults of the entry form (e.g. the default start of a
-manual duration entry) are UI details and are decided in `docs/UX.md`; the timer in
-statistics is in section 7.5.
+Not in this block: the layout and the default dates and times of the entry forms (e.g. 12:00 on
+a past date) are UI details and are decided in `docs/UX.md`; the rules here fix only
+what changes the stored data (BHV-ENTRY-R5, R6b). The timer in statistics is in
+section 7.5.
 
 Rules:
 - **BHV-ENTRY-R1 Entries per day:** a duration or numeric habit can have several
@@ -400,8 +401,9 @@ Rules:
   user can go to any date, also a future one. In v1 no entry can be added on a date
   after today and none can be moved to a later date or time (BHV-ENTRY-R5): the habits are shown with their value (normally 0; a
   duration entry that ends after midnight adds its part, BHV-ENTRY-R2) and without
-  action controls (no check, no "+", no timer, no manual entry). The timer works only on
-  today's date; on a past date a duration habit offers manual entry only. An existing
+  action controls (no check, no "+", no timer, no manual entry). A timer can be started
+  only on today's date (a running one is listed on every day it covers,
+  BHV-TIMER-R1); on a past date a duration habit offers manual entry only. An existing
   entry that lies after today (possible after a change of the time zone, BHV-ENTRY-R2)
   can be edited (its value) and deleted from the entries list of its habit.
 - **BHV-ENTRY-R4 Value of a day:** the total of the entries of that day plus, for a
@@ -414,7 +416,8 @@ Rules:
   above 0 after rounding to 3 decimal places; negative values are not possible. A
   numeric entry has a date and a time (default: the selected date, and now on
   today's date); when an entry is added, or its date or time is changed, they cannot
-  be in the future. The rule does not apply to editing only the value of an entry or
+  be in the future (a date or time set back to its stored value is not changed). The
+  rule does not apply to editing only the value of an entry or
   to an import: after a change of the time zone an existing entry may lie in the
   future. Numeric input accepts both a comma and a dot as the decimal separator.
 - **BHV-ENTRY-R6 Editing and deleting (REQ-M5):** a numeric entry is edited by its
@@ -422,6 +425,20 @@ Rules:
   every entry can be deleted. An edited entry must satisfy BHV-ENTRY-R5. After an
   edit or a deletion the results of all periods that contain the day (also completed
   ones and those of archived goals) are computed again from the entries.
+- **BHV-ENTRY-R6a Undo of a deletion:** a deletion asks no confirmation and can be
+  undone for a few seconds after it, also after the entries list is closed (Decision
+  86). The undo is withdrawn as soon as the habit gets a new entry on that day or is
+  archived or deleted, so it never creates a second binary entry on a day. Unmarking a
+  binary entry with the Day screen control offers no undo (marking again is the undo).
+- **BHV-ENTRY-R6b Time precision:** times of manual entries are entered and edited to
+  the minute. The default times of a new manual entry are now cut to the whole minute.
+  When an entry is edited, a time (hour and minute) that the user does not change
+  keeps its seconds, also when only its date changes; a changed time, by typing, the
+  picker or a quick button, gets 0 seconds. A time counts as changed when its hour
+  and minute at Save differ from the stored ones; a time changed and set back is not
+  changed (`docs/UX.md` section 1, "changed"). An entry added with "+" on today's date
+  gets the current time with its seconds (on a past date, see BHV-ENTRY-R8); entries with equal times are listed in the order they were
+  added.
 - **BHV-ENTRY-R7 Overlapping time:** duration entries, and a running timer, may
   overlap in time; their lengths add up.
 - **BHV-ENTRY-R8 Adding a numeric value:** the "+" button of a numeric habit adds one
@@ -435,7 +452,7 @@ Rules:
   picked by the user stays. Picking today's date puts the screen back to following
   today. A running timer updates the displayed values live.
 - **BHV-DAY-R2 Progress indicator:** the indicator of a habit on the Day screen shows
-  the completion percentage of the goal period that contains the selected date (a
+  the progress of the goal period that contains the selected date (a
   period not completed yet is provisional). If several goals count a period that
   contains the date, the active goal is used when it counts that period; otherwise
   the goal with the latest first day (on equal first days the one with the shorter
@@ -445,20 +462,24 @@ Rules:
   change), there is no indicator.
   - Build habit: the indicator shows the completion percentage (BHV-EVAL-R3).
   - Quit habit: the indicator does not show the completion percentage but the use
-    of the limit, "result / limit" (e.g. 1/3), for the same period. The colour
-    runs from green (result 0) towards amber as the result grows, is amber when
-    the result equals the limit (the period is still achieved, BHV-EVAL-R2) and
-    red when the result is above the limit. With limit 0, result 0 is green and any
-    result above 0 is red. The numbers are always shown; colour is never the only
-    carrier of the information. Statistics are not affected (BHV-EVAL-R3).
+    of the limit (the result against the limit) for the same period. Three states
+    are told apart at a glance: within the limit, at the limit (the period is still
+    achieved, BHV-EVAL-R2) and above the limit; with limit 0 only within (result 0)
+    and above. The numbers are always shown; colour is never the only carrier of
+    the information. Text format, fill and colours are in `docs/UX.md` section 3.
+    Statistics are not affected (BHV-EVAL-R3).
 - **BHV-TIMER-R1 Timers:** several timers may run at once, at most one per duration
   habit. A timer survives closing the app (REQ-M4). Stopping a timer creates one
   duration entry (start, length). A running timer counts toward the value of its day
-  and the result of its goal period up to now. In the entries list of the habit it is
-  a live item that can be stopped or discarded; editing its start is not in v1. A
+  and the result of its goal period up to now. In the entries list of the habit, on
+  every day it covers, it is a live item that can be stopped or discarded; discarding asks no confirmation and
+  can be undone for a few seconds after it, the timer then runs on from its original
+  start (Decision 86). The undo is withdrawn as soon as a new timer of the habit is
+  started or the habit is archived or deleted, so it never creates a second timer.
+  Editing its start is not in v1. A
   timer has no maximum length.
 - **BHV-TIMER-R2 Stop with a non-positive length:** the length of the entry is the
-  time since the start, rounded to the nearest second (BHV-ENTRY-R5). If it is 0 or
+  time since the start, rounded to the nearest second, half up (BHV-ENTRY-R5). If it is 0 or
   negative (the device clock was moved back before the start, or Stop right after
   Start), Stop creates no entry, a message is shown and the timer keeps running.
 - **BHV-TIMER-R3 Habit changes:** archiving a habit with a running timer stops the
@@ -484,11 +505,11 @@ Today is Wed 11 Nov 2026 unless a row says otherwise.
 | BHV-ENTRY-1 | Binary habit, today marked as done | The user taps the check again | The entry is removed; the day is "not done" | user (Dec. 14, 24) |
 | BHV-ENTRY-2 | The Day screen shows 11 Nov (today) | The user goes to 12 Nov (arrow or calendar) | The screen shows 12 Nov with every habit at its value (0 when there are no entries) and no way to add entries | user (Dec. 40; 2026-11-13) |
 | BHV-ENTRY-3 | Duration habit, the Day screen shows the past date 10 Nov | The user looks at the habit's controls | Manual entry is offered; starting a timer is not | user (Dec. 50) |
-| BHV-ENTRY-4 | Numeric habit (unit l), device time zone Europe/Warsaw; an entry of 0.25 l was added on the past date 5 Nov at 23:30 | The device time zone changes to Pacific/Auckland | The entry is still on 5 Nov at 23:30 | user (Dec. 13, 50; 2026-11-13) |
+| BHV-ENTRY-4 | Numeric habit (unit l), device time zone Europe/Warsaw; an entry of 0.25 l was added on the past date 5 Nov at 23:30 | The device time zone changes to Pacific/Auckland | The entry is still on 5 Nov at 23:30 | user (Dec. 13, 80; 2026-11-13) |
 | BHV-ENTRY-5 | Duration entry 20:00-21:00 on 10 Nov in Europe/Warsaw; binary entry on 10 Nov | The device time zone changes to Pacific/Auckland | The duration entry now falls on 11 Nov (days are recomputed, accepted); the binary entry stays on 10 Nov | user (Dec. 13, 44) |
 | BHV-ENTRY-6 | Duration habit | The user enters a manual entry with start 10:00 and end 09:00 | Rejected (length must be above 0) | user (Dec. 51, 63) |
 | BHV-ENTRY-7 | Duration habit; it is 11:30 today | The user enters a manual entry for tomorrow 09:00-10:00 | Rejected (the start cannot be in the future) | user (Dec. 70) |
-| BHV-ENTRY-8 | Duration habit; it is 11:30 today | The user enters a manual entry today 11:00-15:00 | Rejected (the end cannot be in the future) | user (2026-11-16) |
+| BHV-ENTRY-8 | Duration habit; it is 11:30 today | The user enters a manual entry today 11:00-15:00 | Rejected (the end cannot be in the future) | user (Dec. 63) |
 | BHV-ENTRY-9a | Numeric habit | The user enters 0 | Rejected | user (Dec. 51) |
 | BHV-ENTRY-9b | Numeric habit | The user enters -1 | Rejected | user (Dec. 51) |
 | BHV-ENTRY-9c | Numeric habit | The user enters 0.0004 | Rejected (rounds to 0.000) | user (Dec. 46, 51) |
@@ -505,7 +526,19 @@ Today is Wed 11 Nov 2026 unless a row says otherwise.
 | BHV-ENTRY-18 | Numeric habit | The user adds an entry for 12 Nov (any time) | Not possible (no entries after today) | user (2026-11-13) |
 | BHV-ENTRY-19 | Duration habit; it is 01:30 on 12 Nov | The user enters a manual entry 11 Nov 23:00 - 12 Nov 01:00 (crosses midnight, both in the past) | Accepted; 11 Nov shows 1 h and 12 Nov shows 1 h | assistant (new) |
 | BHV-ENTRY-20 | Numeric habit (unit l, step 0.25); the Day screen shows the past date 10 Nov | The user taps "+" | An entry of 0.25 l is added on 10 Nov (the selected date), not on today | assistant (new) |
-| BHV-ENTRY-21 | A numeric entry on 12 Nov at 08:30 made in Pacific/Auckland; the device is now in Europe/Warsaw, 11 Nov 21:00 (the entry lies in the future) | The user opens it from the entries list of the habit and edits only its value to 0.3 | Accepted (the future rule applies only when the date or time is changed); changing its time to 08:45 is rejected; the entry can also be deleted | assistant (new) |
+| BHV-ENTRY-21a | A numeric entry on 12 Nov at 08:30 made in Pacific/Auckland; the device is now in Europe/Warsaw, 11 Nov 21:00 (the entry lies in the future) | The user opens it from the entries list of the habit and edits only its value to 0.3 | Accepted (the future rule applies only when the date or time is changed) | assistant (new) |
+| BHV-ENTRY-21b | As BHV-ENTRY-21a | The user changes its time to 08:45 | Rejected (the time cannot be in the future) | assistant (new) |
+| BHV-ENTRY-21c | As BHV-ENTRY-21a | The user deletes it | Deleted | assistant (new) |
+| BHV-ENTRY-21d | As BHV-ENTRY-21a | The user changes its time to 08:45, sets it back to 08:30 and edits the value to 0.3 | Accepted (at Save the time is not changed) | user (2026-11-24) |
+| BHV-ENTRY-22a | Numeric habit with a daily goal 2 l; today has entries 1.25 l and 0.75 l (goal achieved) | The user deletes the 0.75 l entry | No confirmation is asked; the entry is gone and the day shows 1.25 l, goal not achieved; an "Undo" action is offered for a few seconds | user (Dec. 86) |
+| BHV-ENTRY-22b | As BHV-ENTRY-22a, right after the deletion | The user taps "Undo" | The 0.75 l entry is back with its value, date and time; the day shows 2 l, goal achieved | user (Dec. 86) |
+| BHV-ENTRY-22c | Build binary habit; today's entry was deleted in the entries list and "Undo" is still offered | The user marks today with the check on the Day screen | Today has one entry; the "Undo" is withdrawn, so it cannot add a second entry | user (Dec. 86) |
+| BHV-ENTRY-22d | Build binary habit, today marked | The user unmarks today with the check on the Day screen | The entry is removed; no "Undo" is offered | user (Dec. 86) |
+| BHV-ENTRY-23a | Duration entry from a timer, 10 Nov 10:00:17 - 10:45:42 (45 min 25 s) | The user changes only the date of the start and the end to 9 Nov | The entry is 9 Nov 10:00:17 - 10:45:42; the length stays 45 min 25 s | user (2026-11-23) |
+| BHV-ENTRY-23b | As BHV-ENTRY-23a | The user changes only the end time to 10:50 | The entry is 10:00:17 - 10:50:00; the length is 49 min 43 s | user (2026-11-23) |
+| BHV-ENTRY-23c | As BHV-ENTRY-23a | The user taps +5 min under the end | The end is 10:50:00 (a changed time gets 0 seconds); the length is 49 min 43 s | user (2026-11-23) |
+| BHV-ENTRY-23d | As BHV-ENTRY-23a | The user types the end 10:50 and then 10:45 again | The end stays 10:45:42 (at Save the time is not changed); the length stays 45 min 25 s | user (2026-11-24) |
+| BHV-ENTRY-24 | Duration habit; it is 11:30:27 on 11 Nov | The user opens a new manual entry and taps -15 min on the start | Start 11:15:00, end 11:30:00 (defaults cut to the minute); length 15 min | user (2026-11-23) |
 | BHV-DAY-1 | The Day screen follows today (the user has not picked a date); it is 23:59 on 11 Nov | Midnight passes | The screen shows 12 Nov | user (Dec. 58) |
 | BHV-DAY-2 | The user picked 5 Nov on the Day screen | Midnight passes | The screen still shows 5 Nov | user (Dec. 58) |
 | BHV-DAY-3 | Duration habit with a manual entry of 30 min today and a running timer started 20 min ago | The user looks at the Day screen | The value of today is 50 min and keeps growing while the timer runs | user (Dec. 45, 56) |
@@ -514,8 +547,15 @@ Today is Wed 11 Nov 2026 unless a row says otherwise.
 | BHV-DAY-6 | State of BHV-GOAL-6a (old goal target 3 archived; active goal target 4 from 2 Nov) | The user goes to 3 Nov | The indicator shows the week of 2 Nov under the active goal (target 4) | user (2026-11-13) |
 | BHV-DAY-7 | State of BHV-GOAL-1 (old goal target 3 archived, last day 11 Nov, counting 26 Oct and 2 Nov; active goal target 4 from 9 Nov) | The user goes to 28 Oct | The active goal does not count that week, so the indicator shows the week of 26 Oct under the archived goal (target 3) | user (2026-11-13) |
 | BHV-DAY-8 | State of BHV-GOAL-2 (old weekly goal archived, last day 11 Nov; new daily goal from 11 Nov) | The user goes to 10 Nov | No goal counts a period that contains 10 Nov (the week 9-15 is cut), so there is no indicator | assistant (new) |
-| BHV-DAY-9 | Quit habit, numeric, daily limit 3 | The day has results 0, 1, 3, 4 in turn | The indicator shows 0/3 green, 1/3 between green and amber, 3/3 amber (the day is achieved), 4/3 red (not achieved) | user (2026-11-16) |
-| BHV-DAY-10 | Quit habit, binary, daily limit 0 | The user has no entry, then adds one | The indicator shows 0 green, then 1 red | assistant (new) |
+| BHV-DAY-9a | Quit habit, numeric, daily limit 3; result of today 0 | The user looks at the Day screen | The indicator shows "0/3", within the limit | user (Dec. 82) |
+| BHV-DAY-9b | As BHV-DAY-9a; result of today 1.5 | The user looks at the Day screen | The indicator shows "1.5/3", within the limit (half of it used) | user (Dec. 82) |
+| BHV-DAY-9c | As BHV-DAY-9a; result of today 3 | The user looks at the Day screen | The indicator shows "3/3", at the limit; the day is achieved | user (Dec. 82) |
+| BHV-DAY-9d | As BHV-DAY-9a; result of today 4 | The user looks at the Day screen | The indicator shows "4/3", above the limit; the day is not achieved | user (Dec. 82) |
+| BHV-DAY-10a | Quit habit, binary, daily limit 0; no entry today | The user looks at the Day screen | The indicator shows "0", within the limit | user (Dec. 82) |
+| BHV-DAY-10b | Quit habit, binary, daily limit 0; one entry today | The user looks at the Day screen | The indicator shows "1", above the limit | user (Dec. 82) |
+| BHV-DAY-11 | Quit habit, duration, daily limit 3 h; result of today 1 h 20 min 30 s | The user looks at the Day screen | The indicator shows "1h20m/3h", within the limit | user (Dec. 82) |
+| BHV-DAY-12a | Quit habit, duration, daily limit 3 h; result of today 3 h 0 min 20 s | The user looks at the Day screen | The indicator shows "3h1m/3h", above the limit (the text never looks like "at the limit") | user (Dec. 82) |
+| BHV-DAY-12b | Quit habit, duration, daily limit 0; result of today 40 s | The user looks at the Day screen | The indicator shows "40s" (to the second, the limit is under 1 min), above the limit | user (Dec. 82) |
 | BHV-TIMER-1 | Duration habit, timer started 23:30 on 10 Nov and still running | It is 00:20 on 11 Nov | Value of 10 Nov: 30 min; value of 11 Nov: 20 min and growing | user (Dec. 12, 56) |
 | BHV-TIMER-2 | As BHV-TIMER-1 | The timer is stopped at 00:20 | One entry (start 23:30 on 10 Nov, length 50 min); 30 min fall on 10 Nov and 20 min on 11 Nov | user (Dec. 12) |
 | BHV-TIMER-3 | Timer started 10:00 on 11 Nov | The device clock is moved back to 09:00 and the user taps Stop | No entry; a message is shown; the timer keeps running | user (Dec. 51) |
@@ -526,6 +566,12 @@ Today is Wed 11 Nov 2026 unless a row says otherwise.
 | BHV-TIMER-8 | Duration habit, timer started 10:00 | The phone is restarted and the app opened at 10:45 | As BHV-TIMER-7; the notification is back | user (REQ-M4, REQ-S3) |
 | BHV-TIMER-9a | Duration habit, timer started at 10:00:00.0 | The user taps Stop at 10:00:00.4 | The length rounds to 0 s: no entry; a message is shown; the timer keeps running (as BHV-TIMER-3) | assistant (new) |
 | BHV-TIMER-9b | Duration habit, timer started at 10:00:00.0 | The user taps Stop at 10:00:01.6 | One entry of 2 s | assistant (new) |
+| BHV-TIMER-9c | Duration habit, timer started at 10:00:00.0 | The user taps Stop at 10:00:00.5 | One entry of 1 s (half up) | user (2026-11-23) |
+| BHV-TIMER-10a | Duration habit, timer started 10:00; it is 10:45 | The user discards the timer | No confirmation is asked; no entry; the notification is removed; an "Undo" action is offered for a few seconds | user (Dec. 86) |
+| BHV-TIMER-10b | As BHV-TIMER-10a, right after discarding, at 10:45 | The user taps "Undo" | The timer runs again from 10:00 (session time 45 min); the notification is back | user (Dec. 86) |
+| BHV-TIMER-10c | As BHV-TIMER-10a, right after discarding; "Undo" is still offered | The user starts a new timer of the habit at 10:46 | The new timer runs from 10:46; the "Undo" is withdrawn, so there is never a second timer | user (Dec. 86) |
+| BHV-TIMER-11a | As BHV-TIMER-1 (timer started 23:30 on 10 Nov, now 00:20 on 11 Nov) | The user opens the entries list of the habit on 10 Nov | The running timer is listed as a live item with Stop and Discard | user (2026-11-23) |
+| BHV-TIMER-11b | As BHV-TIMER-11a | The user taps Stop in the entries list of 10 Nov | One entry 23:30 - 00:20, as when stopped from 11 Nov (BHV-TIMER-2) | user (2026-11-23) |
 | BHV-NOTIF-1 | A running timer with a notification | The user dismisses the notification | The timer keeps running; the notification comes back at the next start of the app | user (Dec. 47, 57) |
 | BHV-NOTIF-2 | The app has running timers and notifications | An import replaces all data | There is one notification per imported running timer; all other notifications are removed | user (Dec. 57) |
 | BHV-NOTIF-3 | The notification permission has not been decided | The user starts the first timer and refuses the permission | The timer works; a one-time message says Stop is only available in the app | user (Dec. 47) |
@@ -633,7 +679,11 @@ Rules:
 - **BHV-HABIT-R2 What can change:** the name can always change. The direction and
   the measurement type cannot change after the habit is created (a mistake is fixed
   by deleting the habit and creating a new one). Changing the unit of a numeric
-  habit only relabels the existing values (no conversion) and shows a warning.
+  habit only relabels the existing values (no conversion) and shows a warning when
+  something is relabeled: the habit has entries, a goal (active or archived) or a "+"
+  step set by the user. The check uses the habit as stored before this Save, so a
+  step or goal entered in the same form does not count. A habit without any of them
+  changes its unit without a warning.
 - **BHV-HABIT-R3 Archive, restore, delete:**
   - archiving keeps the entries and the statistics, removes the habit from the Day
     screen, stops its timer (BHV-TIMER-R3) and archives its active goal (its last
@@ -649,7 +699,9 @@ Rules:
     the same N) is created and starts in the current period (BHV-GOAL-R1); the old
     goal stays in the archive. The restored goal can be edited afterwards like any goal. If no, the habit has no active goal;
   - deleting removes the habit with its entries, goals and running timer, after a
-    confirmation.
+    confirmation; an archived habit can be deleted too. An archived habit cannot be
+    edited, so it cannot get an active goal (BHV-IMPORT-R4); it can only be restored
+    or deleted.
 - **BHV-HABIT-R4 Order:** the Day screen lists every habit that is not archived every
   day (v1 has no weekday schedule), alphabetically by name ignoring case, with the
   letter order of the app language (in Polish Ł comes after L); habits with equal
@@ -690,6 +742,10 @@ Rules:
 | BHV-HABIT-14 | Numeric habit with a custom unit "cups", no step set by the user | The user taps "+" | An entry of 1 cup is added | assistant (new) |
 | BHV-HABIT-15 | Habit created today with a weekly goal (no completed period) | The habit is archived | The goal is archived with the habit (last day today), not deleted; restoring the habit later offers it (on the same day the goal is reactivated, BHV-HABIT-R3) | assistant (new) |
 | BHV-HABIT-16 | Habits "Łyżwy" and "Zumba" in the app language Polish | The user looks at the Day screen | Order: Łyżwy, Zumba | assistant (new) |
+| BHV-HABIT-17 | Archived habit with entries and an archived goal | The user deletes it and confirms | The habit, its entries and goals are removed; it is gone from the Statistics screen | user (Dec. 89) |
+| BHV-HABIT-18 | Archived habit with an archived goal | The user opens it from the Habits screen | Its data are shown read-only; no field or goal can be changed; restore and delete are offered | user (Dec. 89) |
+| BHV-HABIT-19 | Numeric habit (l) without entries, without a goal and with the default step | The user changes the unit to ml | The unit changes without a warning (nothing is relabeled) | user (2026-11-23) |
+| BHV-HABIT-20 | Numeric habit (l) without entries, with a daily goal of 2 l | The user changes the unit to ml | The warning is shown (the goal target is relabeled to 2 ml), as in BHV-GOAL-11b | user (2026-11-23) |
 
 ### 7.7 Export and import (REQ-S1)
 
@@ -713,7 +769,10 @@ Rules:
   the ends), a line saying how many. The user chooses one of three actions, none
   preselected:
   - *Replace all*: all current data are replaced by the content of the file, after a
-    warning that current data will be lost and a confirmation;
+    warning that current data will be lost and a confirmation. The warning also
+    offers to export the current data first: the replacement then runs only after
+    the export has been written; if the export is cancelled or fails, nothing is
+    replaced (Decision 88);
   - *Add to existing*: the habits of the file are added as new habits, each with its
     entries, goals and running timer, next to the existing ones. Nothing existing is
     changed or deleted. Habits with equal names are allowed, so importing the same
@@ -748,7 +807,11 @@ Rules:
 | BHV-IMPORT-3b | A file with a running timer of an archived duration habit | The user picks it | Rejected; current data unchanged | user (Dec. 49) |
 | BHV-IMPORT-4a | A file with an entry of a habit that is not in the file | The user picks it | Rejected; current data unchanged | user (Dec. 49) |
 | BHV-IMPORT-4b | A file with a goal or a timer of a habit that is not in the file | The user picks it | Rejected; current data unchanged | user (Dec. 49) |
-| BHV-IMPORT-5 | A valid file; the app has other data | The user chooses *Replace all* and confirms | The data of the app are replaced by the file's; all rules hold afterwards | user (Dec. 49, 78) |
+| BHV-IMPORT-5a | A valid file; the app has other data | The user chooses *Replace all* and confirms | The data of the app are replaced by the file's; all rules hold afterwards | user (Dec. 49, 78) |
+| BHV-IMPORT-5b | A valid file; the app has other data | The user chooses *Replace all*, then "Export and replace" in the warning, and the export is written | A backup of the current data is written first; then the data of the app are replaced by the file's | user (Dec. 88) |
+| BHV-IMPORT-5c | As BHV-IMPORT-5b | The user cancels the save dialog of the export | Nothing is replaced; current data unchanged; a message says that nothing was replaced | user (Dec. 88) |
+| BHV-IMPORT-5d | As BHV-IMPORT-5b | Writing the export fails | Nothing is replaced; current data unchanged; a message says that nothing was replaced | user (Dec. 88) |
+| BHV-IMPORT-5e | As BHV-IMPORT-5b; the export was written | Writing the imported data fails | The data of the app are unchanged (BHV-IMPORT-R3); a message says the import failed; the export file stays | user (Dec. 88) |
 | BHV-IMPORT-6 | A file with two active goals of one habit | The user picks it | Rejected; current data unchanged | assistant (new) |
 | BHV-IMPORT-7 | A file with two entries of one binary habit on the same day | The user picks it | Rejected; current data unchanged | assistant (new) |
 | BHV-IMPORT-8 | A file with an active goal on an archived habit | The user picks it | Rejected; current data unchanged | assistant (new) |
@@ -763,8 +826,10 @@ Rules:
 | BHV-IMPORT-17 | A file with a weekly goal, first day Mon 26 Oct, archived, last day Wed 11 Nov | The user picks it and chooses *Replace all* | Accepted; the goal is in the archive with the last day 11 Nov | assistant (new) |
 | BHV-IMPORT-18 | A file with a duration entry whose start is later than now (the clock was moved back before the export); it is 11 Nov 21:00 | The user picks it | Accepted (the "not in the future" rules do not apply to an import) | assistant (new) |
 | BHV-IMPORT-19 | A file with a weekly goal (target 3, first day 26 Oct, created 26 Oct, two completed weeks); the user chose *Add to existing* on 11 Nov | The same day the user changes the target of the imported goal to 4 | The goal keeps its creation day from the file, so it is archived (not replaced); the new goal (target 4) starts 9 Nov | assistant (new) |
+| BHV-IMPORT-20 | A valid file; the app has other data | The user chooses *Add to existing* and writing the data fails | The data of the app are unchanged (BHV-IMPORT-R3); a message says the import failed | user (Dec. 88) |
 | BHV-EXPORT-1 | An app with habits of all three types, goals (active and archived), entries and a running timer | The user exports and then imports the file into an empty app with *Replace all* | The same habits, goals (also archived), entries and running timer | user (Dec. 30) |
 | BHV-EXPORT-2 | A file made by an earlier format version of the app | The user imports it in a later version | Imported; the data are as in the file | user (Dec. 30) |
+| BHV-EXPORT-3 | An app with habits | Writing the export file fails | A message says the export failed; the data of the app are unchanged | user (Dec. 88) |
 
 ### 7.8 Language (REQ-M9, REQ-C4)
 

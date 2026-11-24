@@ -1,6 +1,6 @@
 # Design: Habit Tracker (working title)
 
-> **STATUS (2026-11-14): CLEANED UP, NOT APPROVED.** The user-visible behavior
+> **STATUS (2026-11-23): CLEANED UP, NOT APPROVED.** The user-visible behavior
 > (rules and scenarios) lives in `docs/REQUIREMENTS.md` section 7 (IDs `BHV-*`) and
 > the screens in `docs/UX.md`; this document keeps the structure and the mechanisms.
 > Parts marked **TO DESIGN** wait for the next step (state and plan:
@@ -13,7 +13,12 @@
 >   section 6 (REQ-X1 to X6);
 > - export reads "from the earliest entry to today" range by range (section 3,
 >   Entries port), but entries after today can exist (BHV-ENTRY-R3,
->   BHV-ENTRY-21): such an entry would be lost;
+>   BHV-ENTRY-21a): such an entry would be lost;
+> - undo of deleting an entry and of discarding a timer, withdrawn on a conflicting
+>   change (Decision 86); "Export and replace" (Decision 88);
+> - the timer notification port needs an operation to update the text (failed Stop,
+>   `docs/UX.md` section 4); the Stop receiver must go through the Domain operation
+>   "stop timer", not the Data port directly (Decision 71);
 > - the open questions of section 10.
 
 ## Summary and map
@@ -336,7 +341,7 @@ decisions; texts are identifiers resolved by the GUI (section 3, Decisions 22, 6
   string resources and formats them for the locale. Adding a language means adding
   resource files only. Built-in unit names come from resources; a custom unit is a
   plain label. The behavior of the language choice is BHV-LANG-R1 to R3; where the
-  switch lives is an open UX point (`docs/UX.md` section 7).
+  switch is in `docs/UX.md` section 5 (Decision 84).
 - **Timer in the background:** see section 5.5 (Decision 21).
 
 - **Export / import format (Decision 30):** a JSON file with a format version number.
@@ -402,7 +407,7 @@ belong to the plan.
   with a daily goal, a binary quit habit with a limit of 3 days per week) with
   hand-computed expected results.
 - Goals evaluated correctly: the same tests plus edge cases:
-  - result equal to target, target 0 (BHV-EVAL-4, 5);
+  - result equal to target, target 0 (BHV-EVAL-4a, 4b, 5a, 5b);
   - a goal change in the middle of a period, also with a changed period length and a
     retrospective start (BHV-GOAL-R4, BHV-GOAL-1 to 22);
   - a goal for 30 days that passes through February (BHV-PERIOD-2);
@@ -446,4 +451,5 @@ numbers are stable:
     the official docs; the assistant is not sure of the current details).
 
 Questions 16 (look of the progress indicator, symbol of the quit action control) and
-18 (month calendar) moved to `docs/UX.md` section 7.
+18 (month calendar) were settled in `docs/UX.md` sections 2 and 3 (Decision 82; the
+month calendar is in "Ideas for later", REQ-X6).

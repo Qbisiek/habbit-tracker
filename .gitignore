@@ -165,3 +165,6 @@ build/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Reports of docs-reviewer (kept only until their findings are closed)
+docs/reviews/
