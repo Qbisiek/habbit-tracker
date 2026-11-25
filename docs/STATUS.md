@@ -4,44 +4,33 @@ Overwritten at the end of every session and when a session is interrupted (see
 CLAUDE.md). It holds only the current state. History is in git. Read it at the start
 of a session.
 
-Last updated: 2026-11-24.
+Last updated: 2026-11-25.
 
 ## Where we are
 
-- Phase: plan (`docs/PLAN.md`), started by the user with `/plan-interview` on
-  2026-11-24. Session interrupted at the user's request after the tasks of M3.
+- Phase: plan finished. `docs/PLAN.md` approved by the user on 2026-11-25.
 - Gates: `docs/REQUIREMENTS.md`, `docs/UX.md`, `docs/DESIGN.md` (with
-  `docs/DESIGN-DECISIONS.md` and the diagram) approved by the user on 2026-11-24.
-  `docs/PLAN.md` is a DRAFT, not approved.
-- Uncommitted: `docs/PLAN.md` (new), this file, two fixes of the dashboard
-  (`plan_dashboard.py` and its template: the template opened directly shows a hint
-  instead of broken text; the whole multi-line STATUS banner is shown).
-- Plan tooling committed by the user: the `plan-interview` skill,
-  `.claude/scripts/req_index.py`, `.claude/scripts/plan_dashboard.py` (+ template),
-  `docs/dashboard/` in `.gitignore`.
+  `docs/DESIGN-DECISIONS.md` and the diagram) approved on 2026-11-24; `docs/PLAN.md`
+  approved on 2026-11-25.
+- Implementation not started; the user decides when it starts.
+- Uncommitted: `docs/PLAN.md` (M4-M9 tasks, level 3, approval banner) and this file.
 
-## Plan: agreed so far (user, 2026-11-24)
+## Plan: what was decided (user, 2026-11-24 and 2026-11-25)
 
-- Level 1 (milestones) confirmed: M1 skeleton and spikes; M2 numeric build end to end
-  without goals; M3 export and import; M4 breadth for the first habit (management,
-  Statistics, language switch); M5 goals and the quit direction; M6 goal changes and
-  history; M7 binary and duration with manual entries; M8 timer and notification; M9
-  success criteria and finishing.
-- Choices behind it: first habit kind numeric build (not binary, not duration with a
-  timer); the full data model and file format already in M3; goals (M5-M6) before more
-  habit kinds and the timer (M7-M8).
-- Level 2 (tasks) agreed for M1, M2, M3 (tables in `docs/PLAN.md`).
-  - Application ID / package: `kubisp.habittracker`.
-  - Spike prototypes live in a `spike` package of `app` and are removed in T1.8.
-  - Conventions (section in `docs/PLAN.md`): PL/EN texts in every UI task; the
-    navigation bar has only working tabs (Statistics from M4); the database is
-    recreated on a schema change until the first everyday version (at the latest M9),
-    then real migrations.
-  - Moved out of M3: the goal validity part of BHV-IMPORT-R4 goes to M5; the
-    notification sync and one-time message after an import (BHV-NOTIF-2, 4) and the
-    check that "Export and replace" fits the receiver time go to M8.
-- Not confirmed yet: effort, dependencies and Covers in the tables are proposals
-  until level 3; Covers lists only REQ-* IDs so far (BHV-* IDs come at level 3).
+- 9 milestones, 81 tasks, 185 effort points; every one of the 295 IDs of
+  `req_index.py --coverage` is covered by a task; nothing deferred.
+- Decisions of 2026-11-25 (recorded as task notes in `docs/PLAN.md`):
+  - M4: archive / restore / delete only for a habit without a goal and without a
+    timer; the goal part in M6 (T6.4), the timer part in M8 (T8.2). Statistics
+    figures only for Numeric in M4; Binary and Duration in M7.
+  - M5: an existing goal is read-only in the form (temporary note) until M6; goal
+    validation of Binary and Duration in M7.
+  - The evaluation of a Binary period is in T5.3 (M5), not M7, because the
+    goal-change scenarios of M6 (Fixture S) use a binary habit.
+  - M9: a signed release APK with a fixed key kept outside the repo (T9.8); the Auto
+    Backup settings are in T1.3, not in M9.
+- Earlier decisions (2026-11-24): see the Conventions section and the task notes of
+  M1-M3 in `docs/PLAN.md`.
 
 ## Deferred (consciously, by the user)
 
@@ -59,13 +48,6 @@ Tooling, optional, later: a convergence rule for `/design-loop`; links for IDs
 ## Next steps (the user gates every step)
 
 1. The user reviews and commits `docs/PLAN.md` and this file.
-2. Continue `/plan-interview`: level 2 for M4, then M5-M9 (remember the items moved
-   to M5 and M8), then level 3 (effort, dependencies, Covers with BHV-* IDs), the
-   coverage check (`python .claude/scripts/req_index.py --coverage` and the
-   dashboard), `check-refs.sh`, approval.
-
-## To resume
-
-1. Ask whether `docs/PLAN.md` was committed.
-2. The user restarts `/plan-interview`; the skill finds the existing `docs/PLAN.md`
-   and must ask whether to continue it (continue: from the tasks of M4).
+2. Optional: a `docs-reviewer` review of `docs/PLAN.md`, if the user wants it.
+3. The user decides when the implementation starts; the first task is T1.1 (check
+   the current versions of the toolchain and libraries).
