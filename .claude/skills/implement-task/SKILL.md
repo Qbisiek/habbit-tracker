@@ -34,6 +34,9 @@ The skill has two parts:
    commit it (`chore: <id> - start`), before the task branch is created. Statuses are
    changed only here and in Z, never on a task branch, so parallel task branches never
    conflict on them.
+5. After every status change, regenerate the dashboard:
+   `python .claude/scripts/plan_dashboard.py` (it renders the checked-out
+   `docs/PLAN.md`; the output is not in git).
 
 ## A. Context (read progressively)
 1. `android/CODING-GUIDELINES.md` in full.
@@ -93,7 +96,7 @@ Fixes asked by the user are made on the same task branch, then D and E again.
 1. Squash-merge the task branch into the milestone branch with the message
    `<type>: <id> - <task title>` (`android/CODING-GUIDELINES.md` section 9).
 2. On the milestone branch set the status to `done` in `docs/PLAN.md` in the same
-   commit as the squash.
+   commit as the squash. Regenerate the dashboard (S5).
 3. Delete the task branch; push the milestone branch to `origin`.
 4. If it was the last task of the milestone: build the APK, give the user its path and
    the checklist from "Manual test" of the milestone. The merge into `main` is done by
