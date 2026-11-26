@@ -49,13 +49,15 @@ class SpikeActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    SpikeScreen(
-                        languageState = languageState,
-                        activeState = activeState,
-                        onSelectLanguage = ::selectLanguage,
-                        onShowNotification = ::showNotification,
-                        onActiveAction = ::handleActiveAction
-                    )
+                    UndoSpikeScaffold {
+                        SpikeScreen(
+                            languageState = languageState,
+                            activeState = activeState,
+                            onSelectLanguage = ::selectLanguage,
+                            onShowNotification = ::showNotification,
+                            onActiveAction = ::handleActiveAction
+                        )
+                    }
                 }
             }
         }

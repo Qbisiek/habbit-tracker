@@ -42,4 +42,13 @@
     <string name="spike_widths_start_timer">Start the timer</string>
     <string name="spike_widths_row_indicator_top">Day row: two lines, indicator in the first line</string>
     <string name="spike_widths_row_bar">Day row: two lines, progress bar in the first line</string>
+    <string name="spike_undo_title">Undo above the sheet (T1.7)</string>
+    <string name="spike_undo_variant_screen">A: screen host</string>
+    <string name="spike_undo_variant_sheet">B: host in the sheet</string>
+    <string name="spike_undo_open_sheet">Open the entries sheet</string>
+    <string name="spike_undo_offer">Undo offer: %1$s</string>
+    <string name="spike_undo_sheet_title">Entries</string>
+    <string name="spike_undo_delete">Delete the entry</string>
+    <string name="spike_undo_deleted">Entry deleted</string>
+    <string name="spike_undo_action">Undo</string>
 </resources>

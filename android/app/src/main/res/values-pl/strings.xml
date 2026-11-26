@@ -39,4 +39,13 @@
     <string name="spike_widths_start_timer">Uruchom timer</string>
     <string name="spike_widths_row_indicator_top">Wiersz Day: dwie linie, wskaźnik w pierwszej linii</string>
     <string name="spike_widths_row_bar">Wiersz Day: dwie linie, pasek postępu w pierwszej linii</string>
+    <string name="spike_undo_title">Cofnij nad arkuszem (T1.7)</string>
+    <string name="spike_undo_variant_screen">A: host ekranu</string>
+    <string name="spike_undo_variant_sheet">B: host w arkuszu</string>
+    <string name="spike_undo_open_sheet">Otwórz arkusz wpisów</string>
+    <string name="spike_undo_offer">Oferta cofnięcia: %1$s</string>
+    <string name="spike_undo_sheet_title">Wpisy</string>
+    <string name="spike_undo_delete">Usuń wpis</string>
+    <string name="spike_undo_deleted">Wpis usunięty</string>
+    <string name="spike_undo_action">Cofnij</string>
 </resources>
