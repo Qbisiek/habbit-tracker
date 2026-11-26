@@ -55,8 +55,8 @@ Show the user, short:
 - the tests: which `BHV-*` scenarios at which level (`docs/DESIGN.md` section 8);
 - the steps in order;
 - questions and risks, each with a recommendation.
-Wait for the user's approval. Gate 1 is mandatory for T1.1 to T1.3; after them the
-user decides whether it stays.
+Wait for the user's approval. Gate 1 is mandatory for every task of M1 (user decision
+2026-11-26); from M2 on the tasks run in the implementation loop.
 
 ## C. Implementation
 1. Stop and ask the user (do not decide in code) when the task needs:

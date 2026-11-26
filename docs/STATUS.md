@@ -8,15 +8,13 @@ Last updated: 2026-11-26.
 
 ## Where we are
 
-- Phase: implementation, milestone M1 (branch `milestone/m1-skeleton`).
+- Phase: implementation, milestone M1 (branch `milestone/m1-skeleton`, pushed).
 - Gates: REQUIREMENTS, UX, DESIGN approved 2026-11-24; PLAN approved 2026-11-25;
   `android/CODING-GUIDELINES.md` approved 2026-11-26.
-- Done: T1.1 (version catalog `android/gradle/libs.versions.toml`, DESIGN section 2
-  updated). Next ready task: T1.2.
-- The milestone branch is not pushed yet: `git push` from the AI's shell failed with
-  an SSL certificate error (sandbox); the user pushes or decides how to fix it.
-- Uncommitted (tooling, committed by the user): `.claude/skills/implement-task/SKILL.md`
-  (regenerate the dashboard after every status change) and this file.
+- Done: T1.1 (version catalog), T1.2 (Gradle project: `domain` and `app`, wrapper
+  9.9.2, ktlint, compileSdk 37.2), T1.3 (Auto Backup off, INTERNET removed,
+  question 21 closed). Ready: T1.4-T1.7 (spikes), T2.1.
+- Uncommitted: this file.
 
 ## Implementation tooling (decided by the user, 2026-11-26)
 
@@ -25,19 +23,32 @@ Last updated: 2026-11-26.
 - `main` is protected by the PreToolUse hook `.claude/scripts/guard_main.py`; the merge
   of a milestone into `main` and its tag are done by the user.
 - The AI may push `task/*` and `milestone/*` to `origin`, never force push.
-- `/implement-task <ID>` skill: interactive, gate 1 (plan of the task) and gate 2
-  (report) with the user; gate 1 is mandatory for T1.1-T1.3, then the user decides.
+- `/implement-task <ID>` with gate 1 (plan of the task) and gate 2 (report) for every
+  task of M1 (user decision 2026-11-26). From M2 on: the implementation loop.
+- Statuses in `docs/PLAN.md` change only on the milestone branch; the dashboard is
+  regenerated after every change (it has a roadmap at the top, user request).
 - Later: an implementation loop over a whole milestone (agents `coder` and
   `code-reviewer`), possibly several loops in parallel for independent tasks in git
   worktrees. Not designed yet.
-- Development environment: Android Studio Rabbit 2 (2026.2.2), installed 2026-11-26
-  with winget. The user runs its setup wizard (SDK, emulator).
 
-## Open for T1.2
+## Environment (2026-11-26)
 
-- Check in the build: whether `room-ktx` is still a separate artifact in Room 2.8;
-  that `kotlinx-coroutines-test` 1.11.0 matches core; AGP 9.5.1 as a stable patch.
-- Android SDK location for the build (`local.properties`) after the wizard.
+- Android Studio Rabbit 2 (2026.2.2); the user opens `android/` (not the repo root).
+- SDK in `%LOCALAPPDATA%\Android\Sdk` (platforms 37.0 and 37.2, build-tools 36.0.0,
+  emulator API 37). JDK: the JetBrains Runtime 25 of Android Studio; the daemon JVM is
+  fixed by `android/gradle/gradle-daemon-jvm.properties` (in git; Gradle recommends
+  committing it; keeping it is the AI's recommendation, not confirmed by the user).
+- Avast HTTPS scanning was switched off by the user: with it on, Java and git (OpenSSL)
+  reject the certificates and Gradle cannot download anything.
+- The AI adds files to commits by name, not with `git add -A` (an unreviewed generated
+  file slipped into the T1.2 commit).
+
+## Open
+
+- Check in the first task with Room (M2): whether `room-ktx` is still a separate
+  artifact in Room 2.8 (it is in the version catalog, not used yet).
+- Smoke tests `BuildSmokeTest` in `domain` and `app`: removed by the first task that
+  adds a real test in that module.
 
 ## Deferred (consciously, by the user)
 
@@ -55,6 +66,6 @@ Tooling, optional, later: a convergence rule for `/design-loop`; links for IDs
 
 ## Next steps (the user gates every step)
 
-1. The user commits the uncommitted tooling files and pushes the milestone branch.
-2. The user finishes the Android Studio setup wizard (SDK, emulator).
-3. `/implement-task T1.2` (Gradle project).
+1. The rest of M1 with `/implement-task`: spikes T1.4-T1.7, then T1.8.
+2. Before M2: design of the implementation loop (agents `coder`, `code-reviewer`,
+   loop skill).
