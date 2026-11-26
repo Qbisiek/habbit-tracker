@@ -148,7 +148,7 @@ function closure(id, next) {
 }
 const ancestors = id => closure(id, x => T[x] ? T[x].deps : []);
 const descendants = id => closure(id, x => rdeps[x] || []);
-const openPts = set => [...set].filter(x => T[x].status !== "done").reduce((a, x) => a + pts(x), 0);
+const openCount = set => [...set].filter(x => T[x].status !== "done").length;
 const ready = id => T[id].status === "todo" && T[id].deps.every(d => T[d] && T[d].status === "done");
 
 // Requirements: state from the tasks that cover them.
@@ -222,7 +222,7 @@ function render() {
         ${ms.goal ? `<dt>Goal</dt><dd>${esc(ms.goal)}</dd>` : ""}
         ${ms.manualTest ? `<dt>Manual test</dt><dd>${esc(ms.manualTest)}</dd>` : ""}</dl>
       <table><thead><tr><th>ID</th><th>Task</th><th>Status</th><th>Effort</th>
-        <th class="hide-sm" title="Open effort of all tasks it waits on / that wait on it">Waits on · blocks</th></tr></thead>
+        <th class="hide-sm" title="Number of open tasks it waits on / that wait on it (the whole chain)">Waits on · blocks</th></tr></thead>
       <tbody>${ms.tasks.map(id => taskRow(id)).join("")}</tbody></table></div></details>`;
   });
   if (!DATA.milestones.length) h += `<div class="list"><div class="empty">No milestones yet.</div></div>`;
@@ -263,7 +263,7 @@ function openMilestone(num) {
 function taskRow(id) {
   const t = T[id];
   const ready_ = ready(id);
-  const w = live(id) ? `<b>${openPts(ancestors(id))}</b> · <b>${openPts(descendants(id))}</b>` : "";
+  const w = live(id) ? `<b>${openCount(ancestors(id))}</b> · <b>${openCount(descendants(id))}</b>` : "";
   return `<tr class="task ${t.status === "dropped" ? "dropped" : ""}" data-task="${id}">
     <td class="id">${id}</td><td>${esc(t.title)}</td>
     <td>${chip(ready_ ? "ready" : t.status)}</td><td>${t.effort}</td>
@@ -290,6 +290,15 @@ function renderReqs() {
 let selected = null, graphSeq = 0;
 const reqTitle = Object.fromEntries(DATA.reqs.map(r => [r.id, r.title]));
 const link = x => `<a class="id" data-go="${x}">${x}</a>`;
+// The whole dependency chain in plan order; tasks reached only through another task are marked "via chain",
+// so the list matches the counts of the "Waits on · blocks" column.
+const planOrder = Object.keys(T);
+const chainList = (chain, direct) => {
+  const ids = [...chain].sort((a, b) => planOrder.indexOf(a) - planOrder.indexOf(b));
+  if (!ids.length) return `<span class="sub">nothing</span>`;
+  return `<ul>${ids.map(x => `<li>${link(x)} ${T[x] ? esc(T[x].title) + " " + chip(T[x].status) : "(unknown)"}${
+    direct.includes(x) ? "" : ` <span class="sub">(via chain)</span>`}</li>`).join("")}</ul>`;
+};
 function openTask(id) {
   document.querySelectorAll("tr.detail").forEach(e => e.remove());
   document.querySelectorAll("tr.task.sel").forEach(e => e.classList.remove("sel"));
@@ -303,10 +312,8 @@ function openTask(id) {
   const d = document.createElement("tr");
   d.className = "detail";
   d.innerHTML = `<td colspan="5"><div class="detail-grid">
-    <div><h4>Waits on (${openPts(anc)} open pts in ${[...anc].filter(x => T[x].status !== "done").length} tasks)</h4>
-      ${t.deps.length ? `<ul>${t.deps.map(x => `<li>${link(x)} ${T[x] ? esc(T[x].title) + " " + chip(T[x].status) : "(unknown)"}</li>`).join("")}</ul>` : `<span class="sub">nothing</span>`}</div>
-    <div><h4>Blocks (${openPts(desc)} open pts in ${desc.size} tasks)</h4>
-      ${(rdeps[id] || []).length ? `<ul>${rdeps[id].map(x => `<li>${link(x)} ${esc(T[x].title)}</li>`).join("")}</ul>` : `<span class="sub">nothing</span>`}</div>
+    <div><h4>Waits on (${openCount(anc)} open tasks in the chain)</h4>${chainList(anc, t.deps)}</div>
+    <div><h4>Blocks (${openCount(desc)} open tasks in the chain)</h4>${chainList(desc, rdeps[id] || [])}</div>
     <div><h4>Covers</h4>
       ${t.covers.length ? `<ul>${t.covers.map(c => `<li><span class="id">${esc(c)}</span> <span class="sub">${esc(reqTitle[c] || "")}</span></li>`).join("")}</ul>` : `<span class="sub">setup / spike</span>`}</div>
     ${t.note ? `<div><h4>Note</h4>${esc(t.note)}</div>` : ""}
