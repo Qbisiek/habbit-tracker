@@ -9,10 +9,17 @@ project: the goal is to practice a structured AI-assisted workflow.
   Artifacts: docs/REQUIREMENTS.md, docs/DESIGN.md, docs/PLAN.md, android/.
 - The user is the gate between phases. Never start the next phase without
   explicit approval. Do not chain skills or agents on your own. The only
-  exception is the design-loop skill (designer + docs-reviewer rounds): only
+  exceptions: the design-loop skill (designer + docs-reviewer rounds): only
   when the user starts it, only inside one phase, and the loop never approves
-  a document or starts the next phase.
-- Never run git commit or git push. The user reviews diffs and commits.
+  a document or starts the next phase; the implementation loop skill (coder +
+  code-reviewer rounds): only when the user starts it, only inside one
+  milestone; it never merges into `main` and never starts the next milestone.
+- Git: follow the branch model in android/CODING-GUIDELINES.md section 9.
+  During implementation the AI commits on `task/*` branches and squash-merges
+  them into their milestone branch after the review is approved. Never commit,
+  merge or push on `main`: the merge into `main` is done by the user. Outside
+  implementation tasks, the user reviews diffs and commits.
+- Coding rules: android/CODING-GUIDELINES.md, read before writing code.
 - Before writing a file, briefly explain what it contains and why.
 - Session state: docs/STATUS.md holds the current state (phase and gate, what
   was agreed, what is open, next steps). Read it at the start of a session.
@@ -54,7 +61,10 @@ project: the goal is to practice a structured AI-assisted workflow.
   - .claude/scripts/plan_dashboard.py - generates the progress dashboard
     docs/dashboard/index.html from docs/PLAN.md (not in git; PLAN.md is the
     only source of truth). Template: plan_dashboard.html
-- android/ - the Android project (does not exist yet)
+  - .claude/scripts/guard_main.py - PreToolUse hook (.claude/settings.json)
+    that blocks the AI's commits, merges and pushes on `main` and force pushes
+- android/ - the Android project (Gradle project not created yet)
+  - android/CODING-GUIDELINES.md - coding rules for every implementer
 
 ## Scope
 - v1 scope is defined in docs/REQUIREMENTS.md. New ideas go to its
