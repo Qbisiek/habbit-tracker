@@ -156,6 +156,7 @@ private fun SpikeContent(
         modifier = Modifier.verticalScroll(rememberScrollState()).safeDrawingPadding().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        WidthsSection()
         OutlinedButton(onClick = onRequestPermission) { Text(stringResource(R.string.spike_request_permission)) }
         NotificationLanguageSection(languageState, onSelectLanguage, onShowNotification)
         ActiveNotificationsSection(activeState, onActiveAction)

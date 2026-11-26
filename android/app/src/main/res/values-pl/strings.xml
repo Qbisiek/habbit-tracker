@@ -23,4 +23,20 @@
     <string name="spike_active_permission_missing">Nie pokazano: brak uprawnienia do powiadomień.</string>
     <string name="spike_active_listed">Lista (%1$s), pokazane: %2$d</string>
     <string name="spike_active_notification_title">Spike: nawyk %1$s</string>
+    <string name="spike_widths_title">Szerokości (T1.6)</string>
+    <string name="spike_widths_screen">Szerokość ekranu: %1$d dp, skala czcionki: %2$s</string>
+    <string name="spike_widths_rings">Teksty pierścienia</string>
+    <string name="spike_widths_manual_entry">Dodaj ręcznie</string>
+    <string name="spike_widths_name_width">Szerokość na nazwę: %1$d dp</string>
+    <string name="spike_widths_fits">mieści się</string>
+    <string name="spike_widths_overflow">przepełnienie: %1$d dp</string>
+    <string name="spike_widths_quick_in_row">Szybkie przyciski: cztery w rzędzie</string>
+    <string name="spike_widths_quick_blocks">Szybkie przyciski: bloki 2x2</string>
+    <string name="spike_widths_row_one_line">Wiersz Day: jedna linia</string>
+    <string name="spike_widths_row_text_inside">Wiersz Day: dwie linie, tekst w pierścieniu</string>
+    <string name="spike_widths_row_text_beside">Wiersz Day: dwie linie, tekst obok pierścienia</string>
+    <string name="spike_widths_stop_timer">Zatrzymaj timer</string>
+    <string name="spike_widths_start_timer">Uruchom timer</string>
+    <string name="spike_widths_row_indicator_top">Wiersz Day: dwie linie, wskaźnik w pierwszej linii</string>
+    <string name="spike_widths_row_bar">Wiersz Day: dwie linie, pasek postępu w pierwszej linii</string>
 </resources>

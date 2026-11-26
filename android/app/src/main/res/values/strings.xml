@@ -26,4 +26,20 @@
     <string name="spike_active_permission_missing">Not posted: the notification permission is not granted.</string>
     <string name="spike_active_listed">List (%1$s), shown: %2$d</string>
     <string name="spike_active_notification_title">Spike: habit %1$s</string>
+    <string name="spike_widths_title">Widths (T1.6)</string>
+    <string name="spike_widths_screen">Screen width: %1$d dp, font scale: %2$s</string>
+    <string name="spike_widths_rings">Ring texts</string>
+    <string name="spike_widths_manual_entry">Add manually</string>
+    <string name="spike_widths_name_width">Width left for the name: %1$d dp</string>
+    <string name="spike_widths_fits">fits</string>
+    <string name="spike_widths_overflow">overflow: %1$d dp</string>
+    <string name="spike_widths_quick_in_row">Quick buttons: four in a row</string>
+    <string name="spike_widths_quick_blocks">Quick buttons: 2x2 blocks</string>
+    <string name="spike_widths_row_one_line">Day row: one line</string>
+    <string name="spike_widths_row_text_inside">Day row: two lines, text in the ring</string>
+    <string name="spike_widths_row_text_beside">Day row: two lines, text beside the ring</string>
+    <string name="spike_widths_stop_timer">Stop the timer</string>
+    <string name="spike_widths_start_timer">Start the timer</string>
+    <string name="spike_widths_row_indicator_top">Day row: two lines, indicator in the first line</string>
+    <string name="spike_widths_row_bar">Day row: two lines, progress bar in the first line</string>
 </resources>
