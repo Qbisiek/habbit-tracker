@@ -82,8 +82,10 @@ Decided:
   natively; the notification permission (`POST_NOTIFICATIONS`) is always required, so
   there is one code path. Lowering it later (e.g. for a Google Play release) would
   mostly affect Platform services.
-- Local storage: Room (androidx), only inside Persistence; stored classes are
-  separate from domain entities and mapped (Decision 35).
+- Local storage: Room 2.x (androidx, package `androidx.room`), only inside
+  Persistence; stored classes are separate from domain entities and mapped (Decision
+  35). Room 3 (`androidx.room3`) was not chosen: it targets Kotlin Multiplatform,
+  which is out of scope (user decision 2026-11-26, T1.1). Code generation with KSP.
 - JSON serialization for export / import: kotlinx.serialization, in the Platform
   services adapter only, with file-model classes separate from Domain (Decision 36).
 - Dependency injection: manually, by constructor, in App (Decision 36).
@@ -94,8 +96,14 @@ Decided:
 - Identities: `java.util.UUID`, available to the pure Kotlin/JVM Domain module
   (Decision 91).
 
-To check in the official docs in the plan phase: versions of all libraries and the
-minimum versions required by Compose and androidx.
+- Platform constraints: `compileSdk` and `targetSdk` 37 (required by Compose 1.12+),
+  JDK 17 or newer, Android Gradle plugin 9 with its built-in Kotlin support.
+- Build and test tools (user decision 2026-11-26, `android/CODING-GUIDELINES.md`):
+  ktlint through its Gradle plugin; JUnit 4; `kotlinx-coroutines-test` and Turbine
+  for coroutines and `Flow`; androidx.test for the instrumented tests of Persistence.
+
+Exact versions: the version catalog `android/gradle/libs.versions.toml` (checked in
+the official docs in T1.1, 2026-11-26) is the only place that names them.
 
 ## 3. Architecture
 
