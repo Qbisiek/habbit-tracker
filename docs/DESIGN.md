@@ -802,7 +802,7 @@ decisions; texts are identifiers resolved by the GUI (section 3, Decisions 22, 6
   ones). Both sections are needed: a missing section leaves that kind of transfer
   fully enabled, and on Android 12 and higher `allowBackup="false"` alone does not stop
   device-to-device transfer on some devices. The older `fullBackupContent` rules are
-  not needed (minimum API 33). Still to check: section 10, question 21.
+  not needed (minimum API 33). Transfer to iOS: section 10, question 21 (resolved).
 
 - **Local storage:** all data stay on the device in Room (Decision 35), behind the
   storage ports; the two notification flags are in a small key-value store of
@@ -941,10 +941,6 @@ plan:
   item 4).
 
 12. App name (inherited from requirements; the user's choice).
-21. Auto Backup: the settings are verified and in section 7 (2026-11-24). Left: the
-    official page does not say whether the cross-platform transfer to iOS (Android 16
-    QPR2, `<cross-platform-transfer>`) is on when the section is missing; check it in
-    the plan and, if so, exclude every domain there too.
 
 **Resolved**
 
@@ -967,6 +963,12 @@ plan:
 16. Look of the progress indicator and symbol of the quit action control: settled in
     `docs/UX.md` section 3 (Decision 82).
 18. Month calendar: in "Ideas for later" (REQ-X6, `docs/UX.md` section 2).
+21. Transfer to iOS (closed by the user 2026-11-26, T1.3): the rules have no
+    `<cross-platform-transfer>` section. The official Auto Backup page still does not
+    say what a missing section means, but the section requires `<platform-specific-params>`
+    with the `bundleId` and `teamId` of the target iOS app, and data go only to that app.
+    The app declares no iOS app, so there is no target. This is a reasoning, not a stated
+    fact: check again if the page changes or an iOS version is planned (REQ-X14).
 22. Undo offers (answered by the user 2026-11-24): one offer at a time, a new deletion
     or discard replaces it; "that day" of BHV-ENTRY-R6a is every day the deleted entry
     covers. Written into `docs/UX.md` section 4 and BHV-ENTRY-R6a; design: section 5.7.
