@@ -69,6 +69,17 @@ Wait for the user's approval. Gate 1 is mandatory for every task of M1 (user dec
    the test passes (`android/CODING-GUIDELINES.md` section 7). Then the next one.
 3. Commit on the task branch in small steps (`android/CODING-GUIDELINES.md`
    section 9, commit messages).
+4. When a UI layout of the documents does not work on the device (it does not fit,
+   it is not clean or not readable), step back before patching it: question the
+   approach itself, not only its parameters. One or two tweaks of the same idea
+   (sizes, paddings, font) are fine; if they do not solve it, look for a different
+   approach: another element (a bar instead of a ring), another arrangement (a second
+   line, wrapping, moving an element to its own line), icons instead of text, less
+   precision in a text (fewer units, rounding). Prototype and measure two or three
+   such alternatives, then propose them to the user with a recommendation (rule 1:
+   the change of `docs/UX.md` is the user's decision). Example: T1.6, where a text
+   inside a progress ring never fitted and the answer was a rectangular bar in a
+   two-line row, not a bigger ring.
 
 Tasks without code (research such as T1.1, document changes such as T1.8): the result
 is a document change. Each change is shown to the user and written only after the user
