@@ -16,4 +16,11 @@
     <string name="spike_notification_running">Timer działa.</string>
     <string name="spike_notification_stop">Zatrzymaj</string>
     <string name="spike_notification_not_stopped">Nie zatrzymano: długość nie jest większa od 0. Timer działa.</string>
+    <string name="spike_active_title">Pokazane powiadomienia (T1.5)</string>
+    <string name="spike_active_show">Pokaż nawyk %1$s</string>
+    <string name="spike_active_list">Wylistuj pokazane powiadomienia</string>
+    <string name="spike_active_show_and_list">Pokaż nawyk %1$s i od razu wylistuj</string>
+    <string name="spike_active_permission_missing">Nie pokazano: brak uprawnienia do powiadomień.</string>
+    <string name="spike_active_listed">Lista (%1$s), pokazane: %2$d</string>
+    <string name="spike_active_notification_title">Spike: nawyk %1$s</string>
 </resources>

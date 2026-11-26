@@ -19,4 +19,11 @@
     <string name="spike_notification_running">The timer is running.</string>
     <string name="spike_notification_stop">Stop</string>
     <string name="spike_notification_not_stopped">Not stopped: the length is not above 0. The timer is running.</string>
+    <string name="spike_active_title">Shown notifications (T1.5)</string>
+    <string name="spike_active_show">Show habit %1$s</string>
+    <string name="spike_active_list">List shown notifications</string>
+    <string name="spike_active_show_and_list">Show habit %1$s and list at once</string>
+    <string name="spike_active_permission_missing">Not posted: the notification permission is not granted.</string>
+    <string name="spike_active_listed">List (%1$s), shown: %2$d</string>
+    <string name="spike_active_notification_title">Spike: habit %1$s</string>
 </resources>

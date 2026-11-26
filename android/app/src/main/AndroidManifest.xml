@@ -39,6 +39,9 @@
         <receiver
             android:name=".spike.SpikeStopReceiver"
             android:exported="false" />
+        <receiver
+            android:name=".spike.SpikeHabitStopReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>
