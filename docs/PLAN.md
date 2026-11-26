@@ -45,7 +45,7 @@ the Undo snackbar above the entries sheet; the listing of shown notifications wo
 
 | ID   | Task | Status | Effort | Depends on | Covers |
 |------|------|--------|--------|------------|--------|
-| T1.1 | Check the current versions of the toolchain and libraries in the official docs (AGP, Gradle, Kotlin, Compose BOM, Navigation Compose, lifecycle ViewModel, Room, KSP, kotlinx.serialization, coroutines, JUnit) | todo | S | - | - |
+| T1.1 | Check the current versions of the toolchain and libraries in the official docs (AGP, Gradle, Kotlin, Compose BOM, Navigation Compose, lifecycle ViewModel, Room, KSP, kotlinx.serialization, coroutines, JUnit) | in progress | S | - | - |
 | T1.2 | Create the Gradle project: pure Kotlin/JVM `domain` module, `app` module with Compose and minimum API 33, version catalog, unit tests running in both modules | todo | M | T1.1 | REQ-C3 |
 | T1.3 | Disable Auto Backup (manifest and data extraction rules), no INTERNET permission; check question 21 (transfer to iOS) | todo | S | T1.2 | REQ-C1, REQ-C5 |
 | T1.4 | Spike: do the timer notification texts follow the per-app language | todo | M | T1.2 | - |
