@@ -91,6 +91,23 @@ details.reqs > summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
 .req { display: grid; grid-template-columns: 130px 90px 1fr auto; gap: 10px; padding: 5px 14px;
   align-items: baseline; }
 .req .t { color: var(--muted); font-size: 12.5px; }
+.roadmap { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 46px 22px; }
+.rm-line { display: flex; position: relative; }
+.rm-seg { position: relative; min-width: 0; }
+.rm-seg .bar { height: 6px; border-radius: 0; }
+.rm-dot { position: absolute; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%;
+  background: var(--card); border: 3px solid var(--todo); cursor: pointer; z-index: 1; }
+.rm-seg .rm-dot { left: -7px; }
+.rm-end { right: -7px; cursor: default; }
+.rm-dot.done { background: var(--done); border-color: var(--done); }
+.rm-dot.doing { border-color: var(--doing); }
+.rm-label { position: absolute; left: 0; transform: translateX(-50%); text-align: center;
+  white-space: nowrap; font-size: 12px; line-height: 1.25; cursor: pointer; }
+.rm-label.rm-end-label { left: auto; right: 0; transform: translateX(50%); cursor: default; }
+.rm-label.up { bottom: 14px; } .rm-label.down { top: 14px; }
+.rm-label b { display: block; }
+.rm-label span { color: var(--muted); font-size: 11px; }
 @media (max-width: 640px) {
   details.ms > summary { grid-template-columns: 1fr auto; }
   details.ms > summary .bar { display: none; }
@@ -173,6 +190,7 @@ function render() {
     from docs/PLAN.md</div>`;
   if (DATA.problems.length) h += `<div class="problems"><b>Problems in the plan (${DATA.problems.length})</b>
     <ul>${DATA.problems.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>`;
+  if (DATA.milestones.length) h += `<h2>Roadmap</h2>` + roadmap(stats);
   h += `<div class="cards">
     <div class="card"><div class="k">Progress (effort)</div>
       <div class="v">${pct(all.done, all.total)}% <small>${all.done} / ${all.total} pts</small></div>${bar(all)}</div>
@@ -215,6 +233,31 @@ function render() {
     <div class="list" id="reqlist"></div></details>`;
   document.getElementById("app").innerHTML = h;
   renderReqs();
+}
+
+// Roadmap: the dot of a milestone starts its segment, and the segment's length is proportional to the
+// milestone's effort points, so the distance between two dots is the work of the first one.
+function roadmap(stats) {
+  const dotState = s => s.total && s.done === s.total ? "done" : s.done || s.doing ? "doing" : "";
+  const allDone = stats.every(s => dotState(s) === "done");
+  const segments = DATA.milestones.map((ms, i) => {
+    const s = stats[i], side = i % 2 ? "down" : "up";
+    return `<div class="rm-seg" style="flex:${s.total || 1} 1 0">${bar(s)}
+      <i class="rm-dot ${dotState(s)}" data-ms="${ms.num}" title="M${ms.num} - ${esc(ms.name)}"></i>
+      <div class="rm-label ${side}" data-ms="${ms.num}"><b>M${ms.num}</b>
+        <span>${s.done}/${s.total} pts</span></div></div>`;
+  }).join("");
+  return `<div class="roadmap"><div class="rm-line">${segments}
+    <i class="rm-dot rm-end ${allDone ? "done" : ""}" title="All milestones done"></i>
+    <div class="rm-label rm-end-label ${DATA.milestones.length % 2 ? "down" : "up"}">
+      <b>v1</b><span>${stats.reduce((a, s) => a + s.total, 0)} pts</span></div></div></div>`;
+}
+
+function openMilestone(num) {
+  const el = document.getElementById("ms" + num);
+  if (!el) return;
+  el.open = true;
+  el.scrollIntoView({block: "start", behavior: "smooth"});
 }
 
 function taskRow(id) {
@@ -317,6 +360,8 @@ function go(id, force = false) {
 document.addEventListener("click", e => {
   const g = e.target.closest("[data-go]");
   if (g) { e.preventDefault(); go(g.dataset.go); return; }
+  const m = e.target.closest("[data-ms]");
+  if (m) { openMilestone(m.dataset.ms); return; }
   const f = e.target.closest("[data-filter]");
   if (f) {
     reqFilter = f.dataset.filter;
