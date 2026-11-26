@@ -147,9 +147,6 @@ not to this document.
 ## 5. Open questions
 
 - App name (working title: "Habit Tracker").
-- Whether the texts of the timer notification follow the app language set with the
-  per-app language setting (BHV-LANG-R2; verified in the first tasks of the plan,
-  `docs/UX.md` section 8).
 - The open questions in `docs/DESIGN.md` section 10 and the checks in
   `docs/UX.md` section 8. Design questions.
 
@@ -557,9 +554,14 @@ Today is Wed 11 Nov 2026 unless a row says otherwise.
 | BHV-DAY-9d | As BHV-DAY-9a; result of today 4 | The user looks at the Day screen | The indicator shows "4/3", above the limit; the day is not achieved | user (Dec. 82) |
 | BHV-DAY-10a | Quit habit, binary, daily limit 0; no entry today | The user looks at the Day screen | The indicator shows "0", within the limit | user (Dec. 82) |
 | BHV-DAY-10b | Quit habit, binary, daily limit 0; one entry today | The user looks at the Day screen | The indicator shows "1", above the limit | user (Dec. 82) |
-| BHV-DAY-11 | Quit habit, duration, daily limit 3 h; result of today 1 h 20 min 30 s | The user looks at the Day screen | The indicator shows "1h20m/3h", within the limit | user (Dec. 82) |
-| BHV-DAY-12a | Quit habit, duration, daily limit 3 h; result of today 3 h 0 min 20 s | The user looks at the Day screen | The indicator shows "3h1m/3h", above the limit (the text never looks like "at the limit") | user (Dec. 82) |
-| BHV-DAY-12b | Quit habit, duration, daily limit 0; result of today 40 s | The user looks at the Day screen | The indicator shows "40s" (to the second, the limit is under 1 min), above the limit | user (Dec. 82) |
+| BHV-DAY-11 | Quit habit, duration, daily limit 3 h; result of today 1 h 20 min 30 s | The user looks at the Day screen | The indicator shows "1h20m/3h", within the limit | user (Dec. 82, 99) |
+| BHV-DAY-12a | Quit habit, duration, daily limit 3 h; result of today 3 h 0 min 20 s | The user looks at the Day screen | The indicator shows "3h1m/3h", above the limit (the text never looks like "at the limit") | user (Dec. 82, 99) |
+| BHV-DAY-12b | Quit habit, duration, daily limit 0; result of today 40 s | The user looks at the Day screen | The indicator shows "40s" (a result under 1 h is exact), above the limit | user (Dec. 82, 99) |
+| BHV-DAY-12c | Quit habit, duration, daily limit 3 h; result of today 45 min 20 s | The user looks at the Day screen | The indicator shows "45m20s/3h", within the limit (a result under 1 h is exact) | user (Dec. 99) |
+| BHV-DAY-13a | Quit habit, numeric, monthly limit 2000; result of the month 1234.56 | The user looks at the Day screen | The indicator shows "1234/2000", within the limit | user (Dec. 99) |
+| BHV-DAY-13b | As BHV-DAY-13a; result of the month 2000.4 | The user looks at the Day screen | The indicator shows "2001/2000", above the limit | user (Dec. 99) |
+| BHV-DAY-13c | Quit habit, numeric, daily limit 2.125; result of today 2.12 | The user looks at the Day screen | The indicator shows "2.12/2.125", within the limit (the decimals of the limit) | user (Dec. 99) |
+| BHV-DAY-14 | Build habit, daily target 3; result of today 3 | The user looks at the Day screen | The bar is full and green with the text "100%", without a check | user (Dec. 99) |
 | BHV-TIMER-1 | Duration habit, timer started 23:30 on 10 Nov and still running | It is 00:20 on 11 Nov | Value of 10 Nov: 30 min; value of 11 Nov: 20 min and growing | user (Dec. 12, 56) |
 | BHV-TIMER-2 | As BHV-TIMER-1 | The timer is stopped at 00:20 | One entry (start 23:30 on 10 Nov, length 50 min); 30 min fall on 10 Nov and 20 min on 11 Nov | user (Dec. 12) |
 | BHV-TIMER-3 | Timer started 10:00 on 11 Nov | The device clock is moved back to 09:00 and the user taps Stop | No entry; a message is shown; the timer keeps running | user (Dec. 51) |
@@ -669,9 +671,11 @@ Rules:
     of days of its period (day 1, week 7, month 31, quarter 92, year 366); a target
     above the length of a shorter period (e.g. 31 in February) is accepted and
     simply unreachable there;
-  - a duration target has a precision of one second, is entered as hours, minutes
-    and seconds (no days), and a daily goal cannot exceed 24 h (on a day of 23 h or
-    25 h, when the clocks change, a goal of 24 h is accepted and may be unreachable);
+  - a duration target is entered as hours, minutes and seconds; hours are the largest
+    unit (no days or weeks: a goal counted in days is a binary habit); a target under
+    1 h has a precision of one second, a target of 1 h or more is in whole minutes (its
+    seconds are 0); a daily goal cannot exceed 24 h (on a day of 23 h or 25 h, when the
+    clocks change, a goal of 24 h is accepted and may be unreachable);
   - the number of periods of a goal for N periods is a whole number >= 1.
 - **BHV-HABIT-R1 A habit:** has a name (not empty after trimming white space;
   duplicates are allowed), a direction (build / quit) and a measurement type. A
@@ -721,6 +725,8 @@ Rules:
 | BHV-GOALVAL-2 | Binary habit with a monthly goal, target 31 | The month is February | The goal was accepted; in February it is unreachable, so the period is not achieved | user (Dec. 65) |
 | BHV-GOALVAL-3a | Duration habit | The user sets a daily target of 25 h | Rejected | user (Dec. 51) |
 | BHV-GOALVAL-3b | Duration habit | The user sets a daily target of 24 h | Accepted | user (Dec. 51) |
+| BHV-GOALVAL-3c | Duration habit | The user sets a target of 1 h 0 min 30 s | Rejected (from 1 h on, whole minutes) | user (Dec. 100) |
+| BHV-GOALVAL-3d | Duration habit | The user sets a target of 59 min 30 s | Accepted | user (Dec. 100) |
 | BHV-GOALVAL-4 | Build numeric habit | The user sets a target of 0 | Rejected (a build target is above 0) | user (Dec. 51) |
 | BHV-GOALVAL-5 | Quit numeric habit | The user sets a limit of 0 | Accepted | user (Dec. 16, 51) |
 | BHV-GOALVAL-6 | Goal form | The user sets a goal for 0 periods | Rejected (at least 1) | user (Dec. 53) |
@@ -845,8 +851,6 @@ The switch is an item "Language" in the menu of the Habits screen (`docs/UX.md`
 section 5; no settings screen). It uses the per-app language API of Android (available
 from Android 13, the minimum version, REQ-C3), so the same choice can be made in the
 system settings of the app (verified in the official Android documentation, 2026-11-16).
-The documentation does not say whether the texts of the timer notifications follow it;
-this is verified in the first tasks of the plan (`docs/UX.md` section 8).
 
 Rules:
 - **BHV-LANG-R1 Default:** until the user chooses a language in the app, the app
@@ -855,7 +859,8 @@ Rules:
 - **BHV-LANG-R2 Switch:** the user can switch the language of the app between Polish
   and English at any time. All texts of the app, including the timer notifications,
   use the chosen language. The choice stays after the app is closed and from then
-  on does not follow the device language.
+  on does not follow the device language. Parts of a notification drawn by the system
+  (the app name, the time) follow the device language.
 - **BHV-LANG-R3 Data:** the language is not part of the exported data. Names of
   habits and custom unit labels are the user's text and are never translated.
 
@@ -868,6 +873,8 @@ Rules:
 | BHV-LANG-5 | The app is in English; a backup was exported earlier in Polish | The user imports it | The language of the app is unchanged | assistant (new) |
 | BHV-LANG-6 | The device language is Polish; the user never chose a language in the app | The device language is changed to English | The app is in English | user (2026-11-13) |
 | BHV-LANG-7 | The user chose Polish in the app; the device language is English | The device language is changed to German | The app stays in Polish | user (2026-11-13) |
+| BHV-LANG-8 | The app is in Polish; a timer runs with its notification | The user switches to English in the app | The notification text and the channel name are in English | user (Dec. 103) |
+| BHV-LANG-9 | The device language is Polish; the user never chose a language in the app; a timer runs with its notification; the app is closed | The device language is changed to English and the user opens the app | The notification text and the channel name are in English | user (Dec. 103) |
 
 ## 8. Ideas for later
 

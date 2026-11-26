@@ -91,6 +91,23 @@ details.reqs > summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
 .req { display: grid; grid-template-columns: 130px 90px 1fr auto; gap: 10px; padding: 5px 14px;
   align-items: baseline; }
 .req .t { color: var(--muted); font-size: 12.5px; }
+.roadmap { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 46px 22px; }
+.rm-line { display: flex; position: relative; }
+.rm-seg { position: relative; min-width: 0; }
+.rm-seg .bar { height: 6px; border-radius: 0; }
+.rm-dot { position: absolute; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%;
+  background: var(--card); border: 3px solid var(--todo); cursor: pointer; z-index: 1; }
+.rm-seg .rm-dot { left: -7px; }
+.rm-end { right: -7px; cursor: default; }
+.rm-dot.done { background: var(--done); border-color: var(--done); }
+.rm-dot.doing { border-color: var(--doing); }
+.rm-label { position: absolute; left: 0; transform: translateX(-50%); text-align: center;
+  white-space: nowrap; font-size: 12px; line-height: 1.25; cursor: pointer; }
+.rm-label.rm-end-label { left: auto; right: 0; transform: translateX(50%); cursor: default; }
+.rm-label.up { bottom: 14px; } .rm-label.down { top: 14px; }
+.rm-label b { display: block; }
+.rm-label span { color: var(--muted); font-size: 11px; }
 @media (max-width: 640px) {
   details.ms > summary { grid-template-columns: 1fr auto; }
   details.ms > summary .bar { display: none; }
@@ -131,7 +148,7 @@ function closure(id, next) {
 }
 const ancestors = id => closure(id, x => T[x] ? T[x].deps : []);
 const descendants = id => closure(id, x => rdeps[x] || []);
-const openPts = set => [...set].filter(x => T[x].status !== "done").reduce((a, x) => a + pts(x), 0);
+const openCount = set => [...set].filter(x => T[x].status !== "done").length;
 const ready = id => T[id].status === "todo" && T[id].deps.every(d => T[d] && T[d].status === "done");
 
 // Requirements: state from the tasks that cover them.
@@ -173,6 +190,7 @@ function render() {
     from docs/PLAN.md</div>`;
   if (DATA.problems.length) h += `<div class="problems"><b>Problems in the plan (${DATA.problems.length})</b>
     <ul>${DATA.problems.map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>`;
+  if (DATA.milestones.length) h += `<h2>Roadmap</h2>` + roadmap(stats);
   h += `<div class="cards">
     <div class="card"><div class="k">Progress (effort)</div>
       <div class="v">${pct(all.done, all.total)}% <small>${all.done} / ${all.total} pts</small></div>${bar(all)}</div>
@@ -204,7 +222,7 @@ function render() {
         ${ms.goal ? `<dt>Goal</dt><dd>${esc(ms.goal)}</dd>` : ""}
         ${ms.manualTest ? `<dt>Manual test</dt><dd>${esc(ms.manualTest)}</dd>` : ""}</dl>
       <table><thead><tr><th>ID</th><th>Task</th><th>Status</th><th>Effort</th>
-        <th class="hide-sm" title="Open effort of all tasks it waits on / that wait on it">Waits on · blocks</th></tr></thead>
+        <th class="hide-sm" title="Number of open tasks it waits on / that wait on it (the whole chain)">Waits on · blocks</th></tr></thead>
       <tbody>${ms.tasks.map(id => taskRow(id)).join("")}</tbody></table></div></details>`;
   });
   if (!DATA.milestones.length) h += `<div class="list"><div class="empty">No milestones yet.</div></div>`;
@@ -217,10 +235,35 @@ function render() {
   renderReqs();
 }
 
+// Roadmap: the dot of a milestone starts its segment, and the segment's length is proportional to the
+// milestone's effort points, so the distance between two dots is the work of the first one.
+function roadmap(stats) {
+  const dotState = s => s.total && s.done === s.total ? "done" : s.done || s.doing ? "doing" : "";
+  const allDone = stats.every(s => dotState(s) === "done");
+  const segments = DATA.milestones.map((ms, i) => {
+    const s = stats[i], side = i % 2 ? "down" : "up";
+    return `<div class="rm-seg" style="flex:${s.total || 1} 1 0">${bar(s)}
+      <i class="rm-dot ${dotState(s)}" data-ms="${ms.num}" title="M${ms.num} - ${esc(ms.name)}"></i>
+      <div class="rm-label ${side}" data-ms="${ms.num}"><b>M${ms.num}</b>
+        <span>${s.done}/${s.total} pts</span></div></div>`;
+  }).join("");
+  return `<div class="roadmap"><div class="rm-line">${segments}
+    <i class="rm-dot rm-end ${allDone ? "done" : ""}" title="All milestones done"></i>
+    <div class="rm-label rm-end-label ${DATA.milestones.length % 2 ? "down" : "up"}">
+      <b>v1</b><span>${stats.reduce((a, s) => a + s.total, 0)} pts</span></div></div></div>`;
+}
+
+function openMilestone(num) {
+  const el = document.getElementById("ms" + num);
+  if (!el) return;
+  el.open = true;
+  el.scrollIntoView({block: "start", behavior: "smooth"});
+}
+
 function taskRow(id) {
   const t = T[id];
   const ready_ = ready(id);
-  const w = live(id) ? `<b>${openPts(ancestors(id))}</b> · <b>${openPts(descendants(id))}</b>` : "";
+  const w = live(id) ? `<b>${openCount(ancestors(id))}</b> · <b>${openCount(descendants(id))}</b>` : "";
   return `<tr class="task ${t.status === "dropped" ? "dropped" : ""}" data-task="${id}">
     <td class="id">${id}</td><td>${esc(t.title)}</td>
     <td>${chip(ready_ ? "ready" : t.status)}</td><td>${t.effort}</td>
@@ -247,6 +290,15 @@ function renderReqs() {
 let selected = null, graphSeq = 0;
 const reqTitle = Object.fromEntries(DATA.reqs.map(r => [r.id, r.title]));
 const link = x => `<a class="id" data-go="${x}">${x}</a>`;
+// The whole dependency chain in plan order; tasks reached only through another task are marked "via chain",
+// so the list matches the counts of the "Waits on · blocks" column.
+const planOrder = Object.keys(T);
+const chainList = (chain, direct) => {
+  const ids = [...chain].sort((a, b) => planOrder.indexOf(a) - planOrder.indexOf(b));
+  if (!ids.length) return `<span class="sub">nothing</span>`;
+  return `<ul>${ids.map(x => `<li>${link(x)} ${T[x] ? esc(T[x].title) + " " + chip(T[x].status) : "(unknown)"}${
+    direct.includes(x) ? "" : ` <span class="sub">(via chain)</span>`}</li>`).join("")}</ul>`;
+};
 function openTask(id) {
   document.querySelectorAll("tr.detail").forEach(e => e.remove());
   document.querySelectorAll("tr.task.sel").forEach(e => e.classList.remove("sel"));
@@ -260,10 +312,8 @@ function openTask(id) {
   const d = document.createElement("tr");
   d.className = "detail";
   d.innerHTML = `<td colspan="5"><div class="detail-grid">
-    <div><h4>Waits on (${openPts(anc)} open pts in ${[...anc].filter(x => T[x].status !== "done").length} tasks)</h4>
-      ${t.deps.length ? `<ul>${t.deps.map(x => `<li>${link(x)} ${T[x] ? esc(T[x].title) + " " + chip(T[x].status) : "(unknown)"}</li>`).join("")}</ul>` : `<span class="sub">nothing</span>`}</div>
-    <div><h4>Blocks (${openPts(desc)} open pts in ${desc.size} tasks)</h4>
-      ${(rdeps[id] || []).length ? `<ul>${rdeps[id].map(x => `<li>${link(x)} ${esc(T[x].title)}</li>`).join("")}</ul>` : `<span class="sub">nothing</span>`}</div>
+    <div><h4>Waits on (${openCount(anc)} open tasks in the chain)</h4>${chainList(anc, t.deps)}</div>
+    <div><h4>Blocks (${openCount(desc)} open tasks in the chain)</h4>${chainList(desc, rdeps[id] || [])}</div>
     <div><h4>Covers</h4>
       ${t.covers.length ? `<ul>${t.covers.map(c => `<li><span class="id">${esc(c)}</span> <span class="sub">${esc(reqTitle[c] || "")}</span></li>`).join("")}</ul>` : `<span class="sub">setup / spike</span>`}</div>
     ${t.note ? `<div><h4>Note</h4>${esc(t.note)}</div>` : ""}
@@ -317,6 +367,8 @@ function go(id, force = false) {
 document.addEventListener("click", e => {
   const g = e.target.closest("[data-go]");
   if (g) { e.preventDefault(); go(g.dataset.go); return; }
+  const m = e.target.closest("[data-ms]");
+  if (m) { openMilestone(m.dataset.ms); return; }
   const f = e.target.closest("[data-filter]");
   if (f) {
     reqFilter = f.dataset.filter;

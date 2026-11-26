@@ -4,97 +4,87 @@ Overwritten at the end of every session and when a session is interrupted (see
 CLAUDE.md). It holds only the current state. History is in git. Read it at the start
 of a session.
 
-Last updated: 2026-11-25 (session interrupted by the user).
+Last updated: 2026-11-26.
 
 ## Where we are
 
-- Phase: plan finished. `docs/PLAN.md` approved by the user on 2026-11-25.
-- Gates: `docs/REQUIREMENTS.md`, `docs/UX.md`, `docs/DESIGN.md` (with
-  `docs/DESIGN-DECISIONS.md` and the diagram) approved on 2026-11-24; `docs/PLAN.md`
-  approved on 2026-11-25.
-- Implementation not started. Current work: preparing the implementation tooling
-  (coding guidelines, git branch model, skills and agents). No file of this work
-  exists yet.
-- Uncommitted: `docs/PLAN.md` (M4-M9 tasks, level 3, approval banner) and this file.
+- Phase: implementation. Milestone M1 (branch `milestone/m1-skeleton`, pushed): all
+  tasks T1.1-T1.8 are done (T1.8 squash `505dc28`) and the manual test is accepted.
+  Waiting for the user: the merge of `milestone/m1-skeleton` into `main` with
+  `--no-ff` and the tag `m1` (done by the user).
+- Gates: REQUIREMENTS, UX, DESIGN approved 2026-11-24; PLAN approved 2026-11-25;
+  `android/CODING-GUIDELINES.md` approved 2026-11-26.
+- M1 APK (debug, no prototypes, built 2026-11-26):
+  `android/app/build/outputs/apk/debug/app-debug.apk`.
+- Manual test of M1 (user decision 2026-11-26): the user's acceptances of T1.4-T1.7 at
+  gate 2 count as the manual test (the prototypes were removed in T1.8). On the final
+  APK the AI checked on the emulator that the app starts, shows "Habit Tracker", has no
+  "Spikes" icon and declares neither `POST_NOTIFICATIONS` nor `INTERNET`.
+- Spike results are recorded in the documents (T1.8): Decisions 99-103, `docs/UX.md`
+  sections 3, 4, 8, `docs/DESIGN.md` sections 3, 5.5, 5.6, 6, 10, `BHV-GOALVAL-R1`,
+  new scenarios BHV-GOALVAL-3c/3d, BHV-DAY-12c/13a-c/14, BHV-LANG-8/9, plan rows T2.12,
+  T5.9, T7.4, T7.7, T8.3, T8.4. A `docs-reviewer` review of the T1.8 changes found one
+  blocker and six major findings; all were fixed with the user's approval except m8
+  (history of the done task T1.6 in PLAN, left as is). No review report is kept.
+- Uncommitted: this file and `.claude/scripts/plan_dashboard.html` (the "Waits on ·
+  blocks" column counts open tasks of the whole chain instead of effort points; the
+  task details list the whole chain, indirect tasks marked "via chain"; user request
+  2026-11-26; not tested in a browser, there is no Node on the machine).
 
-## Implementation tooling: decided by the user (2026-11-25)
+## Implementation tooling (decided by the user, 2026-11-26)
 
-- Goal: the user is involved as little as possible in the implementation itself
-  (requirements, design and plan are detailed enough). Target: a coder -> reviewer
-  loop that may commit on branches and merge into a development branch.
-- The first few tasks are done interactively in the main session, to see how much
-  interaction is really needed; the loop comes after that.
-- Coding guidelines: one single source of truth close to the code, the same for
-  every implementer (skill, agent or human). Content: preferred design patterns,
-  approach to writing code, preferred structures, naming, comments, etc. They must
-  NOT copy `docs/DESIGN.md` or the diagram; they refer to them.
-- Git: `main` holds only finished milestones tested by hand. Direction agreed:
-  a branch per milestone, task branches merged into the milestone branch, manual
-  verification at the end of each milestone, then a merge into `main`.
-- Progressive reading is a requirement for every new skill and agent: read maps,
-  indexes and `req_index.py` first, then only the sections the task needs; never
-  load all documents at once.
-- Order of work (accepted): 1. guidelines, 2. git model, 3. `implement-task` skill
-  with interactive T1.1-T1.3, 4. agents and the loop.
+- Coding rules, branch model (section 9) and Definition of Done (section 10):
+  `android/CODING-GUIDELINES.md`. Commit format `<type>: <task ID> - <summary>`.
+- `main` is protected by the PreToolUse hook `.claude/scripts/guard_main.py`; the merge
+  of a milestone into `main` and its tag are done by the user.
+- The AI may push `task/*` and `milestone/*` to `origin`, never force push.
+- `/implement-task <ID>` with gate 1 (plan of the task) and gate 2 (report). Rule C4
+  (user request 2026-11-26): when a UI layout does not work, step back and question the
+  approach, prototype two or three alternatives and propose them.
+- Statuses in `docs/PLAN.md` change only on the milestone branch; the dashboard is
+  regenerated after every change (it has a roadmap at the top, user request).
+- From M2 on: an implementation loop over a whole milestone (agents `coder` and
+  `code-reviewer`), possibly several loops in parallel for independent tasks in git
+  worktrees. Not designed yet.
 
-## Proposals of Claude, NOT decided (waiting for the user)
+## Environment (2026-11-26)
 
-- Guidelines file: `android/CODING-GUIDELINES.md`, referenced by one line in
-  CLAUDE.md and read by every implementation skill and agent. Before drafting,
-  check what `docs/DESIGN.md` already fixes (layers, DI, patterns) to avoid
-  contradictions. Topics: style and formatter enforced in Gradle (ktlint or
-  detekt); package structure (by feature or by layer), file size, `internal` by
-  default; naming (classes, ViewModel / UiState / events, composables, string keys,
-  test names); patterns (immutability, `sealed` states and results, error handling,
-  coroutines and Flow rules, injected `Clock` and dispatchers, no singletons);
-  Compose (stateless, state hoisting, previews); comments (why, not what; KDoc for
-  the public API of `domain`; IDs `REQ-*` / `BHV-*` / `Decision N` in tests, in
-  production code only where they explain a non-obvious rule); tests (fakes instead
-  of mocking libraries, fixtures, test-first for `BHV-*`); a new library is a design
-  change and needs the user's approval; Definition of Done and the commit message
-  format. Tool versions are filled in after T1.1. Form: a draft with default
-  recommendations, only the real choices (about 6-8) marked for the user.
-- Branch model details: `milestone/m1-skeleton` from `main`;
-  `task/t1.2-gradle-project` from the milestone branch; the AI commits freely on
-  task branches; after reviewer approval and a green build and tests, a squash
-  merge into the milestone branch with the message `T1.2: <title>`, then the task
-  branch is deleted. End of milestone: the AI builds the APK and a checklist from
-  "Manual test" of `docs/PLAN.md`; fixes as further tasks; after the user's
-  acceptance a `--no-ff` merge into `main` and a tag `m1`, done by the user or by
-  the AI only on the user's explicit command.
-- Protection of `main`: a PreToolUse hook that blocks commit / merge / push on
-  `main` (via the `update-config` skill); optionally GitHub branch protection.
-- CLAUDE.md changes needed by the git model and the loop: the rules "Never run git
-  commit or git push" and "Do not chain skills or agents on your own" (text to be
-  proposed to the user).
-- The loop: agents `coder` and `code-reviewer` (read-only, fresh context; checks the
-  diff against the guidelines, `docs/DESIGN.md` and the `Covers` IDs), a loop skill
-  with a round limit and an escalation to the user when a design problem appears.
+- Android Studio Rabbit 2 (2026.2.2); the user opens `android/` (not the repo root).
+- SDK in `%LOCALAPPDATA%\Android\Sdk` (platforms 37.0 and 37.2, build-tools 36.0.0,
+  emulator API 37, AVD "Medium_Phone_API_37.0"). JDK: the JetBrains Runtime 25 of
+  Android Studio; the daemon JVM is fixed by `android/gradle/gradle-daemon-jvm.properties`
+  (in git; keeping it is the AI's recommendation, not confirmed by the user).
+- Avast HTTPS scanning was switched off by the user: with it on, Java and git (OpenSSL)
+  reject the certificates and Gradle cannot download anything.
+- The AI adds files to commits by name, not with `git add -A`.
+- Emulator checks by the AI: adb with `uiautomator dump` and screenshots work; in Git
+  Bash set `MSYS_NO_PATHCONV=1` for device paths; `am kill` did not kill the process,
+  `adb shell run-as kubisp.habittracker kill -9 <pid>` did; `wm density` and
+  `settings put system font_scale` simulate other phones (reset them afterwards).
 
-## Open questions for the user
+## Open
 
-1. Start with the draft of `android/CODING-GUIDELINES.md` in the proposed form
-   (location and topics)?
-2. May the AI push branches other than `main` to `origin` (GitHub)?
-3. Optional: a `docs-reviewer` review of `docs/PLAN.md` before the guidelines.
+- Check in the first task with Room (M2): whether `room-ktx` is still a separate
+  artifact in Room 2.8 (it is in the version catalog, not used yet).
+- Smoke tests `BuildSmokeTest` in `domain` and `app`: removed by the first task that
+  adds a real test in that module.
 
 ## Deferred (consciously, by the user)
 
 From the review of the second design loop (report deleted):
 - M4 placeholders in Decisions 73, 76, 79, 81.
 - M5 diagram arrow App -> GUI / Platform services "creates".
-- M7 UX 8 item 4 fallback vs "No screen subscribes to these streams".
 - M8 Map by topic in DESIGN has no Language entry.
 - S1 split the Domain tests sentence of DESIGN 8 by topic with BHV IDs.
 - S2 shorten "Resolved" 22-26 in DESIGN 10.
 - Decision 92 bundles several decisions in one row (cosmetic).
+(M7, UX 8 item 4, was resolved by T1.8.)
 Tooling, optional, later: a convergence rule for `/design-loop`; links for IDs
-(`BHV-*`, `Decision N`, `UI-*`) as Markdown anchors with a script.
+(`BHV-*`, `Decision N`, `UI-*`) as Markdown anchors with a script; an optional
+`docs-reviewer` review of `docs/PLAN.md`.
 
 ## Next steps (the user gates every step)
 
-1. The user reviews and commits `docs/PLAN.md` and this file.
-2. The user answers the open questions above.
-3. Draft of the coding guidelines, then the git model and the CLAUDE.md changes.
-4. `implement-task` skill; T1.1 (check the current versions of the toolchain and
-   libraries) as the first interactive task.
+1. The user: merge `milestone/m1-skeleton` into `main` with `--no-ff` and tag `m1`.
+2. Before M2: design of the implementation loop (agents `coder`, `code-reviewer`, loop
+   skill), then M2 starting with T2.1.

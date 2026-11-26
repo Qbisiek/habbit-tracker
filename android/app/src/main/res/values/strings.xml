@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Working title until question 12 is decided (T9.3). -->
+    <string name="app_name">Habit Tracker</string>
+</resources>

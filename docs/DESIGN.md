@@ -82,8 +82,10 @@ Decided:
   natively; the notification permission (`POST_NOTIFICATIONS`) is always required, so
   there is one code path. Lowering it later (e.g. for a Google Play release) would
   mostly affect Platform services.
-- Local storage: Room (androidx), only inside Persistence; stored classes are
-  separate from domain entities and mapped (Decision 35).
+- Local storage: Room 2.x (androidx, package `androidx.room`), only inside
+  Persistence; stored classes are separate from domain entities and mapped (Decision
+  35). Room 3 (`androidx.room3`) was not chosen: it targets Kotlin Multiplatform,
+  which is out of scope (user decision 2026-11-26, T1.1). Code generation with KSP.
 - JSON serialization for export / import: kotlinx.serialization, in the Platform
   services adapter only, with file-model classes separate from Domain (Decision 36).
 - Dependency injection: manually, by constructor, in App (Decision 36).
@@ -94,8 +96,14 @@ Decided:
 - Identities: `java.util.UUID`, available to the pure Kotlin/JVM Domain module
   (Decision 91).
 
-To check in the official docs in the plan phase: versions of all libraries and the
-minimum versions required by Compose and androidx.
+- Platform constraints: `compileSdk` and `targetSdk` 37 (required by Compose 1.12+),
+  JDK 17 or newer, Android Gradle plugin 9 with its built-in Kotlin support.
+- Build and test tools (user decision 2026-11-26, `android/CODING-GUIDELINES.md`):
+  ktlint through its Gradle plugin; JUnit 4; `kotlinx-coroutines-test` and Turbine
+  for coroutines and `Flow`; androidx.test for the instrumented tests of Persistence.
+
+Exact versions: the version catalog `android/gradle/libs.versions.toml` (checked in
+the official docs in T1.1, 2026-11-26) is the only place that names them.
 
 ## 3. Architecture
 
@@ -130,10 +138,15 @@ one app-level Presentation object, the App shell. It lives in an Activity-scoped
 change, and with it a message or dialog it is showing. It alone handles what belongs to no screen: the move of the app to the
 foreground (it calls the sync and shows a pending one-time message, section 5.6), the
 snackbars of both Domain streams (the undo offer, section 5.7, and "timer not stopped",
-section 5.5; shown above the current screen, so on the Day screen above the entries
-sheet; that a snackbar can be shown above the modal sheet is checked on the prototype,
-`docs/UX.md` section 8, item 4) and UI-DIALOG-NOTIFICATIONS. No screen subscribes to
-these streams, so a snackbar is never shown twice.
+section 5.5; shown above the current screen; while the entries sheet is open, on a
+second snackbar host inside the sheet, Decision 101) and UI-DIALOG-NOTIFICATIONS. No
+screen subscribes to these streams, so a snackbar is never shown twice. A
+`ModalBottomSheet` has its own window above the window of the Activity (verified on
+the prototype, T1.7), so a snackbar host of the screen is hidden under the open sheet.
+The App shell stays the only owner of the snackbar state: it shows the snackbar on the
+host of the sheet while the sheet is open, otherwise on the host of the screen, never
+on both; on a change of the host it is hidden on the old host and shown on the new
+one; the end of the offer hides it.
 
 The App shell also has a one-way channel from the screens (user decision
 2026-11-24): a screen's Presentation object hands it "show this message or dialog"
@@ -531,10 +544,14 @@ shows UI-MSG-TIMER-NOT-STOPPED above the visible screen (Observer through `Flow`
 Decision 94). A stream without a subscriber drops the event. Only these two
 operations publish on it.
 
-The texts of the notification are built by the Platform services adapter. If the plan
-shows that they do not follow the per-app language (`docs/UX.md` section 8, item 1),
-the adapter builds them with a context configured to the app language; the change
-stays inside Platform services.
+The texts of the notification are built by the Platform services adapter from the
+app's resources; they follow the per-app language, also in a process started by the
+Stop receiver and after a change of the device language (verified on the prototype,
+T1.4, API 37). Parts drawn by the system (the app name, the time, texts of the shade)
+use the language of the device. A notification already shown and the name of the
+channel keep their language until they are posted again, so when the language
+changes, the sync posts every notification again and the adapter creates the channel
+again with its new name (section 5.6, Decision 103).
 
 Archiving or deleting a habit with a running timer, and a stop with a non-positive
 length, are behavior (BHV-TIMER-R2, R3); archiving and deleting are Data operations
@@ -553,20 +570,40 @@ the running timers through the Running timers port (and the names through the Ha
 port), asks the Timer notification port which habits have a notification, shows one
 for every running timer that has none and removes every notification whose habit has
 no running timer. Without the permission nothing can be shown, so it only removes. It
-is idempotent. It is called:
-- by App at every process start (also one started by the Stop button of a
-  notification);
+is idempotent. It has two modes: *normal* (above) and *post all again*, which posts the
+notification of every running timer again and creates the channel again with its name
+in the current language (Decision 103). It is called:
+- by App at every process start, in the mode *post all again* (the language may have
+  changed while the process was not running, BHV-LANG-9; also a start by the Stop
+  button of a notification);
 - by the App shell (section 3) when the GUI reports that the app moved to the
   foreground: the notification comes back every time the app is opened or returns to
   the foreground (BHV-TIMER-R5, BHV-NOTIF-1; user decision 2026-11-24, question 23);
 - by Domain after an import, and after the permission request when the permission was
   granted; there it is an internal step under the lock of the calling operation
-  (section 3).
+  (section 3);
+- by the App shell when the language tag it receives at the creation of the Activity
+  (Decision 92) differs from the previous one, in the mode "post all again"
+  (Decision 103).
 App and the App shell call the public operation.
 A later boot receiver (an extra component and permission) would be one more caller
 (section 10, question 7). Starting a timer and the undo of a discard show the
 notification of that timer directly; stopping, discarding, archiving and deleting
 remove it; all of them inside their Domain operation.
+
+**Shown notifications (Decision 102; verified on the prototype, T1.5, API 37):** the
+adapter lists the app's shown notifications with
+`NotificationManagerCompat.getActiveNotifications()` (androidx.core, no new library)
+and posts each with the tag `habit:<habit id>` (`notify(tag, id, ...)`); the Stop
+intent carries the habit id in its data URI (`.../habit/<habit id>`), which
+`Intent.filterEquals` compares, so the Stop of one habit never carries the extra of
+another (a request code is an int and cannot hold a UUID without collisions). The list also returns a summary that the system adds when the app
+shows two or more notifications without a group (autogroup, posted asynchronously);
+the adapter counts only notifications with its tag prefix and never removes others.
+The list survives a killed process and reflects dismissals. Revoking the permission
+and a force stop remove every notification of the app; swiping the collapsed group in
+the shade dismisses all timer notifications at once; in every case the sync posts them
+again at the next foreground (BHV-NOTIF-1).
 
 **Permission and the one-time message (BHV-TIMER-R5, Decision 97):** Android does not
 tell "never asked" from "refused", so Platform services keeps two device flags in a
@@ -686,11 +723,11 @@ validation of the draft, also for the OK button of the time picker
 Screens, navigation and layout: `docs/UX.md`. What the architecture requires of them:
 the GUI renders the state of Presentation and forwards actions without making
 decisions; texts are identifiers resolved by the GUI (section 3, Decisions 22, 61).
-- The Quit ring of a Duration habit (UI-DAY-INDICATOR, `docs/UX.md` section 3):
-  Presentation computes the numbers to show (the result cut down to the minute within
-  the limit and rounded up above it, to the second when the limit has seconds or is
-  under 1 min) as plain values from the Domain result; the GUI only writes them with
-  the compact units. Binary and Numeric show the exact numbers.
+- The Quit text of the progress bar (UI-DAY-INDICATOR, `docs/UX.md` section 3,
+  Decision 99): Presentation computes the numbers to show (at most two units for a
+  Duration, decimals by size for a Numeric number, the result cut down within the
+  limit and rounded up above it) as plain values from the Domain result; the GUI only
+  writes them with the compact units. Binary shows the exact numbers.
 - The read-only view of an archived habit (UI-HABITFORM-ARCHIVED-VIEW) is a state of
   the habit form in Presentation; Domain refuses to save an archived habit (section
   4.1).
@@ -794,7 +831,7 @@ decisions; texts are identifiers resolved by the GUI (section 3, Decisions 22, 6
   ones). Both sections are needed: a missing section leaves that kind of transfer
   fully enabled, and on Android 12 and higher `allowBackup="false"` alone does not stop
   device-to-device transfer on some devices. The older `fullBackupContent` rules are
-  not needed (minimum API 33). Still to check: section 10, question 21.
+  not needed (minimum API 33). Transfer to iOS: section 10, question 21 (resolved).
 
 - **Local storage:** all data stay on the device in Room (Decision 35), behind the
   storage ports; the two notification flags are in a small key-value store of
@@ -921,22 +958,10 @@ rules are owned by `docs/REQUIREMENTS.md` section 7; the log gives the reasoning
 
 The numbers are stable and never reused.
 
-**Carried to the plan phase** (none changes the structure of the design). By the
-user's decision of 2026-11-24 the checks below are the first tasks (spikes) of the
-plan:
-- the language of the timer notification texts (`docs/UX.md` section 8, item 1; the
-  fallback is in section 5.5);
-- the API that lists the app's shown notifications, for the sync (question 7,
-  section 5.6);
-- the widths on a phone prototype (`docs/UX.md` section 8, item 3);
-- a snackbar of the App shell above the modal bottom sheet (`docs/UX.md` section 8,
-  item 4).
+**Carried to the plan phase:** checked in the spikes T1.4-T1.7 (2026-11-26); results in
+sections 3, 5.5, 5.6 and `docs/UX.md` sections 3, 4.
 
 12. App name (inherited from requirements; the user's choice).
-21. Auto Backup: the settings are verified and in section 7 (2026-11-24). Left: the
-    official page does not say whether the cross-platform transfer to iOS (Android 16
-    QPR2, `<cross-platform-transfer>`) is on when the section is missing; check it in
-    the plan and, if so, exclude every domain there too.
 
 **Resolved**
 
@@ -954,11 +979,17 @@ plan:
    - the later boot receiver (not v1, Decision 57): `ACTION_BOOT_COMPLETED` is exempt
      from the limits on manifest-declared receivers. The pages read do not name its
      permission; check it when the receiver is added.
-   Not checked yet: the API that lists the app's shown notifications for the sync
-   (section 5.6); the plan names it after checking the official docs.
+   The API that lists the shown notifications: verified on the prototype (T1.5),
+   section 5.6.
 16. Look of the progress indicator and symbol of the quit action control: settled in
-    `docs/UX.md` section 3 (Decision 82).
+    `docs/UX.md` section 3 (Decisions 82, 99).
 18. Month calendar: in "Ideas for later" (REQ-X6, `docs/UX.md` section 2).
+21. Transfer to iOS (closed by the user 2026-11-26, T1.3): the rules have no
+    `<cross-platform-transfer>` section. The official Auto Backup page still does not
+    say what a missing section means, but the section requires `<platform-specific-params>`
+    with the `bundleId` and `teamId` of the target iOS app, and data go only to that app.
+    The app declares no iOS app, so there is no target. This is a reasoning, not a stated
+    fact: check again if the page changes or an iOS version is planned (REQ-X14).
 22. Undo offers (answered by the user 2026-11-24): one offer at a time, a new deletion
     or discard replaces it; "that day" of BHV-ENTRY-R6a is every day the deleted entry
     covers. Written into `docs/UX.md` section 4 and BHV-ENTRY-R6a; design: section 5.7.
@@ -982,7 +1013,5 @@ App shell accepts "show message or dialog" from the screens, one way only (secti
 after "Archive" the habit form becomes the read-only view of the archived habit, where
 UI-MSG-TIMER-ARCHIVED is shown (`docs/UX.md` section 5; section 5.5).
 
-Not resolved by the docs and still open in `docs/UX.md` section 8, item 1: whether the
-texts of the timer notification follow the per-app language. The official page on
-per-app languages says that the framework API applies the locale and restarts the
-app, but nothing about notifications built outside an Activity.
+The language of the timer notification texts: resolved by T1.4 (section 5.5,
+Decision 103).

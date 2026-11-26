@@ -60,7 +60,7 @@ In order of priority when they pull in different directions:
   style, the Android Studio code style), plus the default Android Lint of AGP.
   `./gradlew ktlintCheck` must pass. Its version is checked in the official docs
   (T1.1) and it is recorded in `docs/DESIGN.md` section 2 (user decision 2026-11-26).
-- Line length 120 (ktlint default for Android Studio style).
+- Line length 120, set in `android/.editorconfig`.
 - No wildcard imports. No unused code, no commented-out code.
 
 ## 3. Structure

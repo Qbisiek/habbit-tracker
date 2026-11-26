@@ -117,9 +117,12 @@ R2 and BHV-EVAL-R3; this section describes the layout only.
 *Header (UI-DAY-HEADER).* The selected date, previous / next arrows and the calendar
 picker (UI-DAY-PICKER, BHV-DAY-R1).
 
-*Row (UI-DAY-ROW).* Each row has the habit name, an action control that depends on the type, the
-value of the selected day and a small progress indicator. It must fit the width of a
-phone. Tapping the row (outside the action control) opens the bottom sheet of the
+*Row (UI-DAY-ROW, Decision 99).* Each row has the habit name, an action control that
+depends on the type, the value of the selected day and a small progress indicator, in
+two lines: the first has the name and the indicator, the second the action control and
+the value. When the second line does not fit (large font), it wraps; when the indicator
+text does not fit beside the name, the indicator takes its own line under the name and
+the action control and the value move to the line after it. Tapping the row (outside the action control) opens the bottom sheet of the
 habit's entries (Decision 27); the action control is a separate touch area that
 performs the action.
 
@@ -135,46 +138,56 @@ performs the action.
   today's date, at 12:00:00 on a past date, like the default of the numeric form), plus a way to
   type a value, which opens UI-ENTRYFORM-NUMERIC and adds an entry too (nobody taps
   "+" 200 times).
-- Duration: start / stop of the timer, plus manual entry of a time, which opens
-  UI-ENTRYFORM-DURATION. While a timer
+- Duration: start / stop of the timer as icon buttons without text (a triangle to
+  start, a square to stop, each with a content description), plus manual entry of a
+  time (an icon button), which opens UI-ENTRYFORM-DURATION. While a timer
   runs, its session time is shown next to Stop. On a date where the timer is not
   offered (BHV-ENTRY-R3) only manual entry is shown.
 
 *Value (UI-DAY-VALUE).* Every row shows the value of the selected day as a short text (e.g.
 "1.25 l", "1 h 20 min"; for Binary the check itself), whether or not the habit has a
 goal (BHV-ENTRY-R4). It is the value of the day, not the result of the goal period;
-the period is shown by the indicator.
+the period is shown by the indicator. A Duration value shows at most two units, the two
+largest from the first unit that is not 0, cut down; a second unit that is 0 is left
+out ("1 h 20 min", "23 h 59 min", "45 min 20 s", "3 h").
 
-*Progress indicator (UI-DAY-INDICATOR, Decision 82).* A round ring with the number inside, compact, no
-descriptive text, not tappable and without a button frame; the square checkbox and the
-chip of the action controls look different, so the indicator is not mistaken for a
-button. What it shows is defined by BHV-DAY-R2.
-- Build: the ring fills with the completion percentage; at 100% it is a full green ring
-  with a check, otherwise the percentage is inside.
+*Progress indicator (UI-DAY-INDICATOR, Decisions 82, 99).* A compact horizontal bar with
+the text inside, in the first line of the row beside the name; not tappable and
+without a button frame, so it is not mistaken for the checkbox or the chip of the
+action controls. The bar has a minimum width, the same in every row (the width of the
+text "23h59m/23h59m" at the current font size), so the rows stay aligned; a longer
+text (a weekly limit such as "99h45m/100h30m", a large number) widens the bar of its
+row, and if the bar then does not fit beside the name it takes its own line (Row). Its
+height grows with the font. The fill uses light tones, so the dark text stays readable over the
+filled and the empty part. What it shows is defined by BHV-DAY-R2.
+- Build: the bar fills in a light green with the completion percentage and shows it as text ("75%"); at
+  100% the bar is full and green and the text "100%" is the only mark (no check).
 - Quit (the three states of BHV-DAY-R2):
-  - Text: "result/limit" in a short format: Binary and Numeric as exact numbers
-    without the unit ("1/3", "1.5/3"); Duration with compact units h, m, s and no
-    spaces ("1h20m/3h"), since a bare "0:40" could be minutes or seconds. Units that
-    are 0 are left out ("3h", "1h30s"); a duration of 0 is "0". The letters are the
-    same in English and Polish. With limit 0 only the result ("0", "1", "40s"), since
-    "1/0" reads as an error.
-  - Duration rounding, so that the text always tells the state (colour is never the
-    only carrier): within the limit the result is cut down to the minute; above the
-    limit it is rounded up ("3h1m/3h" for 3 h 0 min 20 s). When the limit has
-    seconds or is under 1 min (limit 0 included), the result and the limit are shown
-    to the second, without rounding ("40s" for 40 s at limit 0, "20m/1h30s").
-    BHV-DAY-11, 12a, 12b. Long
-    numbers (e.g. "1250/2000") are to be checked on the prototype; if they do not
-    fit, the fallback is the result in the ring and the limit as small text beside it.
-  - Fill: result / limit, at most a full ring. With limit 0: empty at result 0, full
+  - Text: "result/limit" in a short format: Binary and Numeric as numbers without the
+    unit ("1/3", "1.5/3"); Duration with compact units h, m, s and no spaces
+    ("1h20m/3h"), since a bare "0:40" could be minutes or seconds, and at most two
+    units as in the value. Units that are 0 are left out ("3h"); a duration of 0 is
+    "0". The letters are the same in English and Polish. With limit 0 only the result
+    ("0", "1", "40s"), since "1/0" reads as an error.
+  - Rounding, so that the text never looks like "at the limit" when the result is
+    above it (colour is never the only carrier): a Duration result under 1 h is exact
+    (minutes and seconds); from 1 h on it shows hours and minutes, cut down within the
+    limit and rounded up above it ("3h1m/3h" for 3 h 0 min 20 s). A limit is exact:
+    under 1 h it may have seconds, from 1 h on it has whole minutes (BHV-GOALVAL-R1). A
+    Numeric number keeps decimals by its size (100 and more none, 10 to below 100 one,
+    below 10 up to two), or the decimals of the limit when the limit has more (at most
+    three); trailing zeros are left out. The result is cut down within the limit and
+    rounded up above it, the limit is exact, so the three states are always told
+    apart ("1234/2000", "2.12/2.125"). BHV-DAY-11, 12a, 12b, 12c, 13a, 13b, 13c.
+  - Fill: result / limit, at most a full bar. With limit 0: empty at result 0, full
     above 0.
   - Colour: from green at result 0 to amber at the limit, linear in result / limit;
-    red above the limit. With limit 0: green at 0, red above.
+    red above the limit; light tones. With limit 0: green at 0, red above.
   - The numbers are always shown, so colour is not the only carrier (colour-blind
     users).
-- There is no separate "in progress" mark: a partly filled ring says it. When there is
+- There is no separate "in progress" mark: a partly filled bar says it. When there is
   no indicator (BHV-DAY-R2) the row shows none, but an empty place of the width of the
-  ring stays, so the rows do not shift between dates.
+  bar stays, so the rows do not shift between dates.
 
 *Other dates.* The selected date follows today until the user changes it
 (BHV-DAY-R1). On a date after today the habits are shown with their value and without
@@ -197,8 +210,9 @@ habit on the selected date. What can be edited is defined by BHV-ENTRY-R6.
 
 Deleting an entry or discarding the timer happens at once, without a dialog; a
 snackbar with "Undo" stays for a few seconds (UI-MSG-UNDO-ENTRY, UI-MSG-UNDO-TIMER,
-section 7; Decision 86). The snackbar is shown on the Day screen, above the sheet, and
-stays when the sheet is closed, until it times out or is withdrawn:
+section 7; Decision 86). The snackbar is shown at the bottom of the open sheet and
+moves to the Day screen when the sheet is closed (Decision 101), and stays there until
+it times out or is withdrawn:
 - the undo of a deleted entry disappears when the habit gets a new entry on a day
   that the deleted entry covers, or is archived or deleted (BHV-ENTRY-R6a);
 - the undo of a discarded timer disappears when a new timer of the habit is started,
@@ -217,11 +231,15 @@ mark (BHV-ENTRY-R6, R6a).
     hand; the date is needed because an entry can cross midnight). The time fields are
     hh:mm. The calculated length is shown, with seconds only when they are not 0
     (e.g. "2 s", "45 min 25 s").
-  - Quick buttons: under Start -5 min, -15 min, -30 min, -1 h move the start earlier;
-    under End +5 min, +15 min, +30 min, +1 h move the end later, but never after now: a
-    button that would do so is disabled, so on today's date, with the end at now, they
-    are disabled until the end is moved earlier by hand (BHV-ENTRY-R5). Taps add up.
-    The buttons are fixed in v1 (configurable per habit is in "Ideas for later").
+  - Quick buttons (Decision 99): under Start "-5m", "-15m", "-30m", "-1h" move the
+    start earlier; under End "+5m", "+15m", "+30m", "+1h" move the end later, but never
+    after now: a button that would do so is disabled, so on today's date, with the end
+    at now, they are disabled until the end is moved earlier by hand (BHV-ENTRY-R5).
+    Taps add up. The labels use the compact units of the progress bar (section 3) and
+    are the same in English and Polish. The four buttons of a field are in one row with
+    a small inner padding; when they do not fit (large font), they form two rows of two
+    under their field. The buttons are fixed in v1 (configurable per habit is in "Ideas
+    for later").
   - Defaults: start = end = now cut to the whole minute on today's date, 12:00 on a
     past date (BHV-ENTRY-R6b, BHV-ENTRY-24).
   - Seconds of an edited entry: a time the user does not change keeps its seconds,
@@ -246,15 +264,16 @@ mark (BHV-ENTRY-R6, R6a).
   The value field accepts digits and one decimal separator (comma or dot), no minus
   sign. No increment buttons ("+" is on the Day screen row).
 
-The widths of these forms and of the Day rows are checked on a prototype (section 8).
+The widths of these forms and of the Day rows were checked on a prototype (section 8,
+Decision 99).
 
 *Stop from the notification with a non-positive length (BHV-TIMER-R2).* The text of
 the timer notification (UI-NOTIF-TIMER) changes to "Not stopped: the length is not
 above 0. The timer is running." (the length can also be negative, after the clock was
 moved back, BHV-TIMER-3). The text stays until the next Stop; the elapsed time is
 still shown. When the app is open, a snackbar shows the same message
-(UI-MSG-TIMER-NOT-STOPPED, section 7). That
-a receiver can update the text is to be verified (section 8).
+(UI-MSG-TIMER-NOT-STOPPED, section 7). A receiver can update the text (verified,
+section 8).
 
 ## 5. Habits screen (Decision 28)
 
@@ -344,6 +363,7 @@ English; the Polish ones are written with the translations.
 | Goal: target of a build goal (two fields on a new habit, where the direction can still change) | BHV-GOALVAL-R1, BHV-GOALVAL-4 | "Target must be above 0" |
 | Goal: binary target against the period (two fields) | BHV-GOALVAL-R1, BHV-GOALVAL-1a | "At most 7 days in a week" (the number and the period follow the chosen period) |
 | Goal: duration target against a daily period (two fields) | BHV-GOALVAL-R1, BHV-GOALVAL-3a | "At most 24 h in a day" |
+| Goal: duration target of 1 h or more with seconds (two fields) | BHV-GOALVAL-R1, BHV-GOALVAL-3c | "From 1 h on, whole minutes only" |
 | Goal: N periods | BHV-GOALVAL-R1, BHV-GOALVAL-6 | "At least 1" |
 | Goal: "Last day" line (start, N and period against today; three fields) | BHV-GOAL-R2, R4a, BHV-GOAL-22 | "The goal would end before today" |
 | Numeric entry: value | BHV-ENTRY-R5, BHV-ENTRY-9a | "Value must be above 0" |
@@ -463,21 +483,18 @@ request (BHV-TIMER-R5), the file picker of the import and the save dialog of the
 
 ## 8. Verify in the first tasks of the plan
 
-No UX point is open. To check in the official docs or on a prototype; these are the
-first tasks (spikes) of the plan (user decision, 2026-11-24):
+No UX point is open. All checks are done: the first tasks (spikes) of the plan, T1.4 to
+T1.7, on an emulator with API 37 (2026-11-26):
 1. The texts of the timer notification follow the app language set with the per-app
-   locale API (BHV-LANG-R2; the official page does not say).
+   locale API (BHV-LANG-R2). Verified: yes; a shown notification and the channel name
+   change only when posted again (`docs/DESIGN.md` section 5.5, Decision 103).
 2. (Verified, see below.)
-3. Prototype, widths on a phone: the eight quick buttons of the Duration form in two
-   rows of four (section 4); a Day row of a Duration habit with a running timer (name,
-   Stop, session time, manual entry, value, ring); a Quit Duration ring with
-   "1h20m/3h", the widest Duration text with seconds ("23h59m58s/23h59m59s", a daily
-   limit is at most 24 h) and long numbers in a Quit ring such as "1250/2000"
-   (section 3).
-4. The Undo snackbar is shown above the open entries sheet (section 4). A Material3
-   `ModalBottomSheet` may draw in its own window, above a snackbar host of the screen.
-   If so: a second snackbar host inside the sheet, fed by the same undo offer, or a
-   non-modal sheet (`docs/DESIGN.md`, App shell).
+3. Prototype, widths on a phone. Verified: a text inside a ring did not fit; the Day
+   row has two lines with a progress bar and the quick buttons have compact labels
+   (sections 3 and 4, Decision 99).
+4. The Undo snackbar above the open entries sheet. Verified: the `ModalBottomSheet`
+   has its own window and hides the snackbar of the screen; the sheet has a second
+   snackbar host (section 4, Decision 101).
 
 Verified on 2026-11-23: the Compose Material3 time picker cannot disable hours, the
 date picker can disable days (section 4). Verified on 2026-11-24 (`docs/DESIGN.md`

@@ -45,21 +45,21 @@ the Undo snackbar above the entries sheet; the listing of shown notifications wo
 
 | ID   | Task | Status | Effort | Depends on | Covers |
 |------|------|--------|--------|------------|--------|
-| T1.1 | Check the current versions of the toolchain and libraries in the official docs (AGP, Gradle, Kotlin, Compose BOM, Navigation Compose, lifecycle ViewModel, Room, KSP, kotlinx.serialization, coroutines, JUnit) | todo | S | - | - |
-| T1.2 | Create the Gradle project: pure Kotlin/JVM `domain` module, `app` module with Compose and minimum API 33, version catalog, unit tests running in both modules | todo | M | T1.1 | REQ-C3 |
-| T1.3 | Disable Auto Backup (manifest and data extraction rules), no INTERNET permission; check question 21 (transfer to iOS) | todo | S | T1.2 | REQ-C1, REQ-C5 |
-| T1.4 | Spike: do the timer notification texts follow the per-app language | todo | M | T1.2 | - |
-| T1.5 | Spike: the API that lists the app's shown notifications, for the notification sync | todo | S | T1.2 | - |
-| T1.6 | Spike: widths on a phone prototype (eight quick buttons, Day row with a running timer, widest ring texts) | todo | M | T1.2 | - |
-| T1.7 | Spike: the Undo snackbar above an open `ModalBottomSheet` | todo | S | T1.2 | - |
-| T1.8 | Record the spike results in `docs/UX.md` / `docs/DESIGN.md` (each change approved by the user) and remove the prototypes | todo | S | T1.4, T1.5, T1.6, T1.7 | - |
+| T1.1 | Check the current versions of the toolchain and libraries in the official docs (AGP, Gradle, Kotlin, Compose BOM, Navigation Compose, lifecycle ViewModel, Room, KSP, kotlinx.serialization, coroutines, JUnit) | done | S | - | - |
+| T1.2 | Create the Gradle project: pure Kotlin/JVM `domain` module, `app` module with Compose and minimum API 33, version catalog, unit tests running in both modules | done | M | T1.1 | REQ-C3 |
+| T1.3 | Disable Auto Backup (manifest and data extraction rules), no INTERNET permission; check question 21 (transfer to iOS) | done | S | T1.2 | REQ-C1, REQ-C5 |
+| T1.4 | Spike: do the timer notification texts follow the per-app language | done | M | T1.2 | - |
+| T1.5 | Spike: the API that lists the app's shown notifications, for the notification sync | done | S | T1.2 | - |
+| T1.6 | Spike: widths on a phone prototype (eight quick buttons, Day row with a running timer, widest ring texts) | done | M | T1.2 | - |
+| T1.7 | Spike: the Undo snackbar above an open `ModalBottomSheet` | done | S | T1.2 | - |
+| T1.8 | Record the spike results in `docs/UX.md` / `docs/DESIGN.md` (each change approved by the user) and remove the prototypes | done | S | T1.4, T1.5, T1.6, T1.7 | - |
 
 **T1.1:** Sources: `docs/DESIGN.md` section 2. Also choose SharedPreferences or
 Jetpack DataStore for the two notification flags (Decision 97) when it is needed (M8).
 **T1.2:** Application ID and package: `kubisp.habittracker` (user, 2026-11-24).
 **T1.4-T1.7:** Prototypes live in a `spike` package of the `app` module and are
 removed in T1.8. Sources: `docs/UX.md` section 8 items 1, 3, 4; `docs/DESIGN.md`
-section 10 (question 7) and section 5.5 (fallback for the notification language).
+section 10 (question 7) and section 5.5 (fallback for the notification language; the fallback was removed in T1.8).
 
 ## M2 - First habit end to end
 **Goal:** A numeric build habit without a goal: a minimal habit form, the Day screen,
@@ -81,7 +81,7 @@ days, edit them, delete one and undo; close and reopen the app and the data are 
 | T2.9  | App: composition root, App shell with the Undo snackbar, bottom navigation bar | todo | M | T2.7, T2.8 | - |
 | T2.10 | Habits screen, minimal: list and the form of a new numeric build habit | todo | M | T2.3, T2.9 | REQ-M6 |
 | T2.11 | Day screen: header (arrows, calendar picker, date follows today), rows with "+", typed value and the value of the day | todo | L | T1.8, T2.4, T2.6, T2.9 | REQ-M5, REQ-M6, BHV-DAY-R1, BHV-DAY-1, BHV-DAY-2, BHV-ENTRY-2 |
-| T2.12 | Entries sheet and the numeric entry form: add, edit, delete with Undo, validation messages | todo | L | T2.5, T2.11 | REQ-M5 |
+| T2.12 | Entries sheet and the numeric entry form: add, edit, delete with Undo (the snackbar on a second host inside the sheet, Decision 101), validation messages | todo | L | T2.5, T2.11 | REQ-M5 |
 
 **T2.5:** `docs/DESIGN.md` section 5.7. **T2.6:** BHV-HABIT-R4; needed by the Day
 screen, so it comes before the rest of habit management (M4).
@@ -151,7 +151,7 @@ colours and the statistics against a manual calculation.
 | T5.6  | Domain: the progress indicator of the Day screen (BHV-DAY-R2) | todo | M | T5.3 | REQ-M6, BHV-DAY-R2, BHV-DAY-4, BHV-DAY-5, BHV-DAY-9a, BHV-DAY-9b, BHV-DAY-9c, BHV-DAY-9d |
 | T5.7  | Domain: goal blocks of the statistics (BHV-STATS-R4 to R7) | todo | L | T4.5, T5.3 | REQ-M8c, REQ-SC2, BHV-STATS-R4, BHV-STATS-R5, BHV-STATS-R6, BHV-STATS-R7, BHV-STATS-1, BHV-STATS-2, BHV-STATS-3, BHV-STATS-4, BHV-STATS-5, BHV-STATS-6, BHV-STATS-7, BHV-STATS-13, BHV-STATS-21, BHV-STATS-22 |
 | T5.8  | UI: habit form with the direction Build / Quit and the goal section (switch, target, period, Start with its calendar period, goal length, "Last day", validation messages) | todo | L | T4.3, T5.4 | REQ-M2, REQ-M3 |
-| T5.9  | UI: the ring on the Day screen (UI-DAY-INDICATOR) | todo | M | T2.11, T5.6 | REQ-M6 |
+| T5.9  | Presentation and UI: the progress bar on the Day screen (UI-DAY-INDICATOR, Decision 99), the Numeric rounding of its text | todo | M | T2.11, T5.6 | REQ-M6, BHV-DAY-13a, BHV-DAY-13b, BHV-DAY-13c, BHV-DAY-14 |
 | T5.10 | UI: goal blocks on the Statistics cards (UI-STATS-GOAL, UI-STATS-PROVISIONAL) | todo | M | T4.6, T5.7 | REQ-M8c |
 | T5.11 | Test data: goals and quit habits in the sample file | todo | S | T4.8, T5.5, T5.8 | - |
 
@@ -194,10 +194,10 @@ Statistics screens.
 | T7.1  | Domain: Binary entries (mark and unmark, at most one per day, no Undo for unmarking on the Day row, delete from the sheet with Undo), value of a day | todo | M | T2.5, T3.1 | REQ-M1, REQ-M5, BHV-ENTRY-1, BHV-ENTRY-13, BHV-ENTRY-22c, BHV-ENTRY-22d |
 | T7.2  | Domain: manual Duration entries (validation of the length and "not after now"), the split across days (`docs/DESIGN.md` section 5.3), value of a day, a time zone change | todo | L | T2.5, T3.1 | REQ-M1, REQ-M4, REQ-M5, BHV-ENTRY-R2, BHV-ENTRY-R4, BHV-ENTRY-R5, BHV-ENTRY-R7, BHV-ENTRY-3, BHV-ENTRY-5, BHV-ENTRY-6, BHV-ENTRY-7, BHV-ENTRY-8, BHV-ENTRY-15, BHV-ENTRY-19 |
 | T7.3  | Domain: times of Duration entries (`docs/DESIGN.md` section 5.8): kept seconds, the offset, clock changes (gap and repeated hour), quick buttons move the instant | todo | L | T7.2 | REQ-M5, BHV-ENTRY-R6b, BHV-ENTRY-23a, BHV-ENTRY-23b, BHV-ENTRY-23c, BHV-ENTRY-23d, BHV-ENTRY-24, BHV-ENTRY-25, BHV-ENTRY-26 |
-| T7.4  | Domain: goals of Binary and Duration (the validation moved from M5, the evaluation of Duration, the indicator); Presentation: the numbers of the Duration quit ring (rounding) | todo | M | T5.6, T7.1, T7.2 | REQ-M2, REQ-M3, REQ-SC3, BHV-GOALVAL-1a, BHV-GOALVAL-1b, BHV-GOALVAL-2, BHV-GOALVAL-3a, BHV-GOALVAL-3b, BHV-GOALVAL-7, BHV-IMPORT-2b, BHV-DAY-10a, BHV-DAY-10b, BHV-DAY-11, BHV-DAY-12a, BHV-DAY-12b |
+| T7.4  | Domain: goals of Binary and Duration (the validation moved from M5, the evaluation of Duration, the indicator); Presentation: the Duration texts of the bar (two units, rounding) | todo | M | T5.6, T7.1, T7.2 | REQ-M2, REQ-M3, REQ-SC3, BHV-GOALVAL-1a, BHV-GOALVAL-1b, BHV-GOALVAL-2, BHV-GOALVAL-3a, BHV-GOALVAL-3b, BHV-GOALVAL-3c, BHV-GOALVAL-3d, BHV-GOALVAL-7, BHV-IMPORT-2b, BHV-DAY-10a, BHV-DAY-10b, BHV-DAY-11, BHV-DAY-12a, BHV-DAY-12b, BHV-DAY-12c |
 | T7.5  | Domain: statistics figures for Binary (occurrences) and Duration (total time, average per day) | todo | M | T4.5, T7.1, T7.2 | REQ-M8a, REQ-M8b, BHV-STATS-15, BHV-STATS-16, BHV-STATS-23 |
 | T7.6  | UI: habit form with the type choice Binary / Duration; goal target in days and in h / min / s | todo | M | T6.5, T7.4 | REQ-M1, REQ-M3 |
-| T7.7  | UI: Day row: checkbox (build) and the chip "It happened" (quit), the manual Duration entry button (no timer), value texts, the quit ring in the compact format | todo | M | T5.9, T7.4 | REQ-M1, REQ-M2, REQ-M6 |
+| T7.7  | UI: Day row: checkbox (build) and the chip "It happened" (quit), the manual Duration entry button (no timer), value texts, the Duration texts of the bar in the compact format, the timer icon buttons | todo | M | T5.9, T7.4 | REQ-M1, REQ-M2, REQ-M6 |
 | T7.8  | UI: Duration entry form (Start / End with date and time, quick buttons, length, the disabled OK of the time picker, validation); Binary and Duration entries in the sheet | todo | L | T2.12, T7.3 | REQ-M4, REQ-M5 |
 | T7.9  | UI: Statistics cards for Binary and Duration | todo | S | T6.7, T7.5 | REQ-M8a, REQ-M8b |
 | T7.10 | Test data: Binary and Duration habits in both directions, entries across midnight and on the days of the clock changes | todo | S | T6.8, T7.8 | - |
@@ -215,8 +215,8 @@ refuse the permission, dismiss the notification and reopen the app.
 |------|------|--------|--------|------------|--------|
 | T8.1 | Domain: timer start, stop, discard (BHV-TIMER-R1, R2: rounding to the second, a length not above 0), a running timer in the value of a day, the split across days and the statistics (up to now), the undo of a discarded timer and its withdrawal (`docs/DESIGN.md` section 5.7) | todo | L | T7.2, T7.5 | REQ-M4, BHV-TIMER-R1, BHV-TIMER-R2, BHV-TIMER-1, BHV-TIMER-2, BHV-TIMER-3, BHV-TIMER-7, BHV-TIMER-8, BHV-TIMER-9a, BHV-TIMER-9b, BHV-TIMER-9c, BHV-TIMER-10a, BHV-TIMER-10b, BHV-TIMER-10c, BHV-TIMER-11a, BHV-TIMER-11b, BHV-DAY-3, BHV-STATS-14 |
 | T8.2 | Domain: the timer on archiving and deleting a habit (BHV-TIMER-R3, the part moved from T4.2), the result for UI-MSG-TIMER-ARCHIVED | todo | M | T6.4, T8.1 | REQ-M4, REQ-M6, BHV-TIMER-R3, BHV-TIMER-4, BHV-TIMER-5, BHV-HABIT-8 |
-| T8.3 | Platform services: notification adapter (chronometer, Stop, texts in the app language by the result of T1.4, text change), Stop receiver with `goAsync`, the operation "stop timer from the notification", the "timer not stopped" stream | todo | L | T1.8, T8.1 | REQ-S3, BHV-TIMER-R4, BHV-TIMER-6 |
-| T8.4 | Domain: notification sync (`docs/DESIGN.md` section 5.6), called at process start, on the move to the foreground and after an import (BHV-NOTIF-2, moved from M3) | todo | M | T3.5, T8.3 | REQ-S3, BHV-TIMER-R5, BHV-NOTIF-1, BHV-NOTIF-2, BHV-IMPORT-12 |
+| T8.3 | Platform services: notification adapter (chronometer, Stop, texts in the app language by the result of T1.4, text change, the tag `habit:<id>` and the habit id in the data URI of the Stop intent (Decision 102), recreating the channel), Stop receiver with `goAsync`, the operation "stop timer from the notification", the "timer not stopped" stream | todo | L | T1.8, T8.1 | REQ-S3, BHV-TIMER-R4, BHV-TIMER-6 |
+| T8.4 | Domain: notification sync (`docs/DESIGN.md` section 5.6), called at process start, on the move to the foreground and after an import (BHV-NOTIF-2, moved from M3); the modes normal and *post all again* (process start, a change of the language tag; Decision 103), the filter by the tag prefix | todo | M | T3.5, T8.3 | REQ-S3, BHV-TIMER-R5, BHV-NOTIF-1, BHV-NOTIF-2, BHV-IMPORT-12, BHV-LANG-8, BHV-LANG-9 |
 | T8.5 | Domain and Platform services: permission state and the two device flags (SharedPreferences or DataStore, by T1.1), the permission request flow, the one-time message, also after an import (BHV-NOTIF-3, 4, 5) | todo | M | T8.4 | REQ-S3, BHV-NOTIF-3, BHV-NOTIF-4, BHV-NOTIF-5 |
 | T8.6 | UI: Start / Stop with the session time on the Day row, the live timer item in the sheet (Stop, Discard), UI-MSG-UNDO-TIMER, UI-MSG-TIMER-NOT-STOPPED, UI-DIALOG-NOTIFICATIONS, the system permission request | todo | L | T7.7, T7.8, T8.2, T8.5 | REQ-M4, REQ-S3 |
 | T8.7 | Measure that "Export and replace" on large test data stays well within the about 10 s of a receiver (moved from M3) | todo | S | T3.5, T8.3 | REQ-S1 |
