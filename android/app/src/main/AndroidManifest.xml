@@ -7,6 +7,9 @@
         android:name="android.permission.INTERNET"
         tools:node="remove" />
 
+    <!-- Spike T1.4, removed in T1.8; the real permission request comes with the notification tasks (M8). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -22,6 +25,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Spike prototypes (T1.4-T1.7), removed in T1.8. -->
+        <activity
+            android:name=".spike.SpikeActivity"
+            android:exported="true"
+            android:label="@string/spike_launcher_label">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <receiver
+            android:name=".spike.SpikeStopReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

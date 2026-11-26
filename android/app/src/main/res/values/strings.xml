@@ -2,4 +2,21 @@
 <resources>
     <!-- Working title until question 12 is decided (T9.3). -->
     <string name="app_name">Habit Tracker</string>
+
+    <!-- Spike texts (T1.4-T1.7), removed in T1.8. -->
+    <string name="spike_launcher_label" translatable="false">Spikes</string>
+    <string name="spike_language_polish" translatable="false">Polski</string>
+    <string name="spike_language_english" translatable="false">English</string>
+    <string name="spike_language_title">Notification language (T1.4)</string>
+    <string name="spike_language_effective">Effective app language: %1$s</string>
+    <string name="spike_language_app_setting">Per-app setting: %1$s</string>
+    <string name="spike_language_follow_device">Follow device</string>
+    <string name="spike_language_not_set">none</string>
+    <string name="spike_request_permission">Allow notifications</string>
+    <string name="spike_show_notification">Show timer notification</string>
+    <string name="spike_channel_name">Running timers</string>
+    <string name="spike_notification_title">Spike: running timer</string>
+    <string name="spike_notification_running">The timer is running.</string>
+    <string name="spike_notification_stop">Stop</string>
+    <string name="spike_notification_not_stopped">Not stopped: the length is not above 0. The timer is running.</string>
 </resources>
