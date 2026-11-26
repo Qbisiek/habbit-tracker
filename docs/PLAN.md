@@ -51,7 +51,7 @@ the Undo snackbar above the entries sheet; the listing of shown notifications wo
 | T1.4 | Spike: do the timer notification texts follow the per-app language | done | M | T1.2 | - |
 | T1.5 | Spike: the API that lists the app's shown notifications, for the notification sync | done | S | T1.2 | - |
 | T1.6 | Spike: widths on a phone prototype (eight quick buttons, Day row with a running timer, widest ring texts) | done | M | T1.2 | - |
-| T1.7 | Spike: the Undo snackbar above an open `ModalBottomSheet` | todo | S | T1.2 | - |
+| T1.7 | Spike: the Undo snackbar above an open `ModalBottomSheet` | in progress | S | T1.2 | - |
 | T1.8 | Record the spike results in `docs/UX.md` / `docs/DESIGN.md` (each change approved by the user) and remove the prototypes | todo | S | T1.4, T1.5, T1.6, T1.7 | - |
 
 **T1.1:** Sources: `docs/DESIGN.md` section 2. Also choose SharedPreferences or
