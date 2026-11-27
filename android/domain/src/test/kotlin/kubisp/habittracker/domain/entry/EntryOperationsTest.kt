@@ -4,6 +4,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kubisp.habittracker.domain.entry.NumericEntryProblem.MOMENT_AFTER_NOW
 import kubisp.habittracker.domain.entry.NumericEntryProblem.VALUE_BELOW_SMALLEST
@@ -18,6 +19,7 @@ import kubisp.habittracker.domain.fake.decimal
 import kubisp.habittracker.domain.habit.HabitId
 import kubisp.habittracker.domain.habit.NumericUnit
 import kubisp.habittracker.domain.operation.DomainLock
+import kubisp.habittracker.domain.undo.CurrentUndoOffer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -321,7 +323,13 @@ class EntryOperationsTest {
         assertEquals(emptyList<Entry>(), entriesOf(water.id, TODAY))
     }
 
-    private fun operations() = EntryOperations(lock = lock, habits = storage, entries = storage, clock = clock)
+    private fun TestScope.operations() = EntryOperations(
+        lock = lock,
+        habits = storage,
+        entries = storage,
+        clock = clock,
+        currentUndoOffer = CurrentUndoOffer(lock, clock, backgroundScope)
+    )
 
     private suspend fun storedEntry(value: String, dateTime: LocalDateTime): Entry.Numeric =
         aNumericEntry(water.id, value = decimal(value), dateTime = dateTime).also { storage.add(it) }

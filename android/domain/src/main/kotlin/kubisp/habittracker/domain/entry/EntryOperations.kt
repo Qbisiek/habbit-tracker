@@ -9,12 +9,15 @@ import kubisp.habittracker.domain.operation.DomainLock
 import kubisp.habittracker.domain.port.Clock
 import kubisp.habittracker.domain.port.Entries
 import kubisp.habittracker.domain.port.Habits
+import kubisp.habittracker.domain.undo.CurrentUndoOffer
+import kubisp.habittracker.domain.undo.UndoOffer
 
 class EntryOperations(
     private val lock: DomainLock,
     private val habits: Habits,
     private val entries: Entries,
-    private val clock: Clock
+    private val clock: Clock,
+    private val currentUndoOffer: CurrentUndoOffer
 ) {
     /** BHV-ENTRY-R8: one separate entry of the habit's "+" step on [date]; none on a date after today (BHV-ENTRY-R3). */
     suspend fun addPlusStep(habitId: HabitId, date: LocalDate): NumericEntryResult = lock.withLock {
@@ -46,13 +49,20 @@ class EntryOperations(
         }
     }
 
-    /** BHV-ENTRY-R6: every entry can be deleted, also one after today (BHV-ENTRY-R3, BHV-ENTRY-21c). */
+    /**
+     * BHV-ENTRY-R6: every entry can be deleted, also one after today (BHV-ENTRY-R3, BHV-ENTRY-21c). No confirmation;
+     * [entry] as the form holds it becomes the undo offer (BHV-ENTRY-R6a).
+     */
     suspend fun deleteEntry(entry: Entry) {
-        lock.withLock { entries.delete(entry.id) }
+        lock.withLock {
+            entries.delete(entry.id)
+            currentUndoOffer.replaceWith(UndoOffer.DeletedEntry(entry))
+        }
     }
 
     private suspend fun add(entry: Entry.Numeric): NumericEntryResult {
         entries.add(entry)
+        currentUndoOffer.withdrawIfConflictingWith(entry)
         return NumericEntryResult.Saved(entry)
     }
 
