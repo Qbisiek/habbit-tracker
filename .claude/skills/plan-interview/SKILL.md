@@ -132,8 +132,10 @@ ignored by the script.
 Column rules:
 - ID: `T<milestone>.<n>`, stable, never reused (a removed task gets the status
   `dropped`).
-- Status: `todo`, `in progress`, `done` or `dropped`. Only the implementation
-  changes it, after the user confirms the task is done.
+- Status: `todo`, `in progress`, `blocked`, `done` or `dropped`. Only the
+  implementation changes it: `done` after the user confirms the task is done, or in
+  the implementation loop (`/implement-milestone`) after `code-reviewer` approves it;
+  `blocked` when the loop stops a task for the user's decision.
 - Effort: `S`, `M`, `L` or `XL` (relative size; the dashboard counts 1, 2, 4, 8
   points). A task bigger than XL is split.
 - Depends on: task IDs separated by commas, or `-`. No cycles.

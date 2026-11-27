@@ -12,17 +12,19 @@ Definition of Done, section 10); this skill does not repeat them.
 
 The skill has two parts:
 - **Task procedure** (sections A to E): how one task is done. It is the only
-  description of that work; a future `coder` agent follows the same sections.
+  description of that work; the `coder` agent follows the same sections (its
+  definition lists the differences in the loop: no gates, blocks instead of
+  questions).
 - **Orchestration** (sections S and Z): choosing the task, branches, statuses in
   `docs/PLAN.md`, merge. Here it is done by the main session with the user. In the
-  future implementation loop it is done by the loop skill (not written yet), never by
-  the coder.
+  implementation loop it is done by `/implement-milestone`, never by the coder.
 
 ## S. Start (orchestration)
 1. Read `docs/STATUS.md`. Find the task's row and the notes under its milestone table
    in `docs/PLAN.md` (search for the ID; do not read the whole plan).
-2. The task can be taken when its status is `todo` or `in progress` and every task in
-   `Depends on` is `done`. Otherwise stop and tell the user why.
+2. The task can be taken when its status is `todo`, `in progress` or `blocked` (the
+   user resolves the block here) and every task in `Depends on` is `done`. Otherwise
+   stop and tell the user why.
 3. Branches (`android/CODING-GUIDELINES.md` section 9):
    - the milestone branch exists, or create it from `main`; it must not be behind
      `main`;

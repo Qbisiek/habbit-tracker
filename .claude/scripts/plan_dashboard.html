@@ -47,7 +47,7 @@ h2 { font-size: 15px; margin: 28px 0 10px; color: var(--muted); text-transform: 
 .id { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; white-space: nowrap; }
 .chip { display: inline-block; font-size: 11.5px; padding: 1px 8px; border-radius: 10px;
   white-space: nowrap; border: 1px solid currentColor; }
-.s-done { color: var(--done); } .s-in-progress { color: var(--doing); }
+.s-done { color: var(--done); } .s-in-progress { color: var(--doing); } .s-blocked { color: var(--missing); }
 .s-todo, .s-planned { color: var(--todo); } .s-dropped { color: var(--todo); opacity: .6; }
 .s-missing { color: var(--missing); } .s-deferred { color: var(--deferred); }
 .s-ready { color: var(--accent); }
@@ -337,9 +337,9 @@ async function drawGraph(id, anc, desc) {
   for (const x of nodes) lines.push(`  ${nid(x)}["${label(x)}"]:::${x === id ? "sel" : cls(T[x].status).slice(2).replace("-", "")}`);
   for (const x of nodes) for (const dep of T[x].deps) if (nodes.has(dep)) lines.push(`  ${nid(dep)} --> ${nid(x)}`);
   const c = dark()
-    ? {done: "#1f4a37,#46b985", inprogress: "#4d3c17,#e7b04a", todo: "#2a2f39,#7d8696", sel: "#23304a,#6f9bf0", text: "#e4e7ec"}
-    : {done: "#e3f4ec,#2e9e6b", inprogress: "#fbf0da,#d99a1e", todo: "#f1f3f6,#8a93a3", sel: "#e8effc,#3b6fd8", text: "#1d2330"};
-  for (const k of ["done", "inprogress", "todo", "sel"]) {
+    ? {done: "#1f4a37,#46b985", inprogress: "#4d3c17,#e7b04a", blocked: "#4a2220,#e8675d", todo: "#2a2f39,#7d8696", sel: "#23304a,#6f9bf0", text: "#e4e7ec"}
+    : {done: "#e3f4ec,#2e9e6b", inprogress: "#fbf0da,#d99a1e", blocked: "#fbe5e3,#d2493f", todo: "#f1f3f6,#8a93a3", sel: "#e8effc,#3b6fd8", text: "#1d2330"};
+  for (const k of ["done", "inprogress", "blocked", "todo", "sel"]) {
     const [fill, stroke] = c[k].split(",");
     lines.push(`  classDef ${k} fill:${fill},stroke:${stroke},color:${c.text},stroke-width:${k === "sel" ? 2.5 : 1.2}px`);
   }

@@ -4,32 +4,23 @@ Overwritten at the end of every session and when a session is interrupted (see
 CLAUDE.md). It holds only the current state. History is in git. Read it at the start
 of a session.
 
-Last updated: 2026-11-26.
+Last updated: 2026-11-27.
 
 ## Where we are
 
-- Phase: implementation. Milestone M1 (branch `milestone/m1-skeleton`, pushed): all
-  tasks T1.1-T1.8 are done (T1.8 squash `505dc28`) and the manual test is accepted.
-  Waiting for the user: the merge of `milestone/m1-skeleton` into `main` with
-  `--no-ff` and the tag `m1` (done by the user).
+- Phase: implementation. Milestone M1 is finished: all tasks T1.1-T1.8 done, the
+  manual test accepted (the user's acceptances of the spikes T1.4-T1.7 at gate 2 count
+  as the manual test, user decision 2026-11-26), merged by the user into `main` with
+  `--no-ff` (`573fdbc`) and tagged `m1`. M2 has not started; its milestone branch does
+  not exist yet.
 - Gates: REQUIREMENTS, UX, DESIGN approved 2026-11-24; PLAN approved 2026-11-25;
   `android/CODING-GUIDELINES.md` approved 2026-11-26.
-- M1 APK (debug, no prototypes, built 2026-11-26):
-  `android/app/build/outputs/apk/debug/app-debug.apk`.
-- Manual test of M1 (user decision 2026-11-26): the user's acceptances of T1.4-T1.7 at
-  gate 2 count as the manual test (the prototypes were removed in T1.8). On the final
-  APK the AI checked on the emulator that the app starts, shows "Habit Tracker", has no
-  "Spikes" icon and declares neither `POST_NOTIFICATIONS` nor `INTERNET`.
 - Spike results are recorded in the documents (T1.8): Decisions 99-103, `docs/UX.md`
   sections 3, 4, 8, `docs/DESIGN.md` sections 3, 5.5, 5.6, 6, 10, `BHV-GOALVAL-R1`,
   new scenarios BHV-GOALVAL-3c/3d, BHV-DAY-12c/13a-c/14, BHV-LANG-8/9, plan rows T2.12,
-  T5.9, T7.4, T7.7, T8.3, T8.4. A `docs-reviewer` review of the T1.8 changes found one
-  blocker and six major findings; all were fixed with the user's approval except m8
-  (history of the done task T1.6 in PLAN, left as is). No review report is kept.
-- Uncommitted: this file and `.claude/scripts/plan_dashboard.html` (the "Waits on ·
-  blocks" column counts open tasks of the whole chain instead of effort points; the
-  task details list the whole chain, indirect tasks marked "via chain"; user request
-  2026-11-26; not tested in a browser, there is no Node on the machine).
+  T5.9, T7.4, T7.7, T8.3, T8.4. The `docs-reviewer` findings on T1.8 are all closed
+  (m8 left as history by the user); no review report is kept.
+- Uncommitted: this file only (the AI does not commit on `main`).
 
 ## Implementation tooling (decided by the user, 2026-11-26)
 
@@ -42,10 +33,24 @@ Last updated: 2026-11-26.
   (user request 2026-11-26): when a UI layout does not work, step back and question the
   approach, prototype two or three alternatives and propose them.
 - Statuses in `docs/PLAN.md` change only on the milestone branch; the dashboard is
-  regenerated after every change (it has a roadmap at the top, user request).
-- From M2 on: an implementation loop over a whole milestone (agents `coder` and
-  `code-reviewer`), possibly several loops in parallel for independent tasks in git
-  worktrees. Not designed yet.
+  regenerated after every change (roadmap at the top; the "Waits on · blocks" column
+  counts open tasks of the whole chain, user request 2026-11-26).
+- From M2 on: the implementation loop `/implement-milestone <M>` (written 2026-11-27,
+  not committed and not tried yet; the user reviews the diff and commits). Files:
+  `.claude/skills/implement-milestone/SKILL.md`, `.claude/agents/coder.md`,
+  `.claude/agents/code-reviewer.md`, `.claude/scripts/plan_ready.py`; new status
+  `blocked` in `docs/PLAN.md` (dashboard, `plan-interview`, `/implement-task`). User
+  decisions 2026-11-27: the loop runs through the whole milestone without gates; at
+  most 3 review rounds, Blocking findings after round 3 make the task `blocked` for
+  the user, Non-blocking findings are handled by the coder's judgment; the
+  orchestrator (main session) rebases the task branch onto the milestone branch and
+  squash-merges it (task branches stay local); at most 2 tasks in parallel, each in
+  its own worktree, only ready tasks; at most 1 running task uses the device.
+- Emulator without Android Studio (tested 2026-11-27): `emulator -avd
+  Medium_Phone_API_37.0 -no-window -no-snapshot-save -no-audio` in the background
+  boots in about 30 s; `wm dismiss-keyguard`, `screencap` and `uiautomator dump`
+  work headless; `adb emu kill` stops it. A new worktree needs
+  `android/local.properties` copied (not in git).
 
 ## Environment (2026-11-26)
 
@@ -60,10 +65,15 @@ Last updated: 2026-11-26.
 - Emulator checks by the AI: adb with `uiautomator dump` and screenshots work; in Git
   Bash set `MSYS_NO_PATHCONV=1` for device paths; `am kill` did not kill the process,
   `adb shell run-as kubisp.habittracker kill -9 <pid>` did; `wm density` and
-  `settings put system font_scale` simulate other phones (reset them afterwards).
+  `settings put system font_scale` simulate other phones (reset them afterwards). There
+  is no Node on the machine (the dashboard JS cannot be syntax-checked).
 
 ## Open
 
+- Tooling: `.claude/scripts/guard_main.py` blocks every Bash command that contains the
+  word `main` (also read-only ones such as `git tag --list` while on `main`, or a Python
+  script that edits a file and mentions `main`); `git log --decorate` works. Possibly
+  narrow the hook to writing git commands (user to decide).
 - Check in the first task with Room (M2): whether `room-ktx` is still a separate
   artifact in Room 2.8 (it is in the version catalog, not used yet).
 - Smoke tests `BuildSmokeTest` in `domain` and `app`: removed by the first task that
@@ -85,6 +95,8 @@ Tooling, optional, later: a convergence rule for `/design-loop`; links for IDs
 
 ## Next steps (the user gates every step)
 
-1. The user: merge `milestone/m1-skeleton` into `main` with `--no-ff` and tag `m1`.
-2. Before M2: design of the implementation loop (agents `coder`, `code-reviewer`, loop
-   skill), then M2 starting with T2.1.
+1. The user reviews and commits the loop tooling on `main` (see "Implementation
+   tooling").
+2. M2: `/implement-milestone M2` creates `milestone/m2-...` from `main` (name by
+   `android/CODING-GUIDELINES.md` section 9) and starts with T2.1, the only ready task.
+   First run of the loop: watch it and adjust the skill after the milestone.

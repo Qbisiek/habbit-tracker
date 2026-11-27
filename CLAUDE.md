@@ -11,9 +11,10 @@ project: the goal is to practice a structured AI-assisted workflow.
   explicit approval. Do not chain skills or agents on your own. The only
   exceptions: the design-loop skill (designer + docs-reviewer rounds): only
   when the user starts it, only inside one phase, and the loop never approves
-  a document or starts the next phase; the implementation loop skill (coder +
-  code-reviewer rounds): only when the user starts it, only inside one
-  milestone; it never merges into `main` and never starts the next milestone.
+  a document or starts the next phase; the implementation loop skill
+  /implement-milestone (coder + code-reviewer rounds): only when the user starts
+  it, only inside one milestone; it never merges into `main` and never starts
+  the next milestone.
 - Git: follow the branch model in android/CODING-GUIDELINES.md section 9.
   During implementation the AI commits on `task/*` branches and squash-merges
   them into their milestone branch after the review is approved. Never commit,
@@ -53,6 +54,8 @@ project: the goal is to practice a structured AI-assisted workflow.
     consciously deferred by the user before the plan phase starts. When all
     its findings are closed, the report is deleted; what was decided lives in
     the documents and in docs/STATUS.md.
+    docs/reviews/code/<milestone>/ holds the reports of the implementation loop
+    (coder, code-reviewer, loop log); deleted when the user has seen them.
 - .claude/skills/, .claude/agents/, .claude/scripts/ - workflow tooling
   - .claude/scripts/check-refs.sh - mechanical reference check of docs/ (IDs,
     Decisions, UI-*, section references); run it before a docs review
@@ -61,6 +64,8 @@ project: the goal is to practice a structured AI-assisted workflow.
   - .claude/scripts/plan_dashboard.py - generates the progress dashboard
     docs/dashboard/index.html from docs/PLAN.md (not in git; PLAN.md is the
     only source of truth). Template: plan_dashboard.html
+  - .claude/scripts/plan_ready.py - tasks of one milestone by state (ready,
+    in progress, blocked, waiting, done); used by /implement-milestone
   - .claude/scripts/guard_main.py - PreToolUse hook (.claude/settings.json)
     that blocks the AI's commits, merges and pushes on `main` and force pushes
 - android/ - the Android project (Gradle project not created yet)

@@ -194,7 +194,10 @@ catalog, checked in the official docs.
   its milestone branch: `task/t1.2-gradle-project`.
 - The AI commits freely on task branches.
 - A task branch is squash-merged into its milestone branch after the review is
-  approved and `./gradlew build` passes, then deleted.
+  approved and `./gradlew build` passes, then deleted. In the implementation loop
+  (`/implement-milestone`) it is first rebased onto the milestone branch and built
+  again (user decision 2026-11-27); task branches of the loop stay local, because a
+  rebased branch could only be pushed with a force push.
 - End of a milestone: the AI builds the APK and a checklist from "Manual test" of
   `docs/PLAN.md`; fixes are further tasks. After the user's acceptance the user
   merges the milestone branch into `main` with `--no-ff` and tags it (`m1`).

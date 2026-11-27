@@ -34,7 +34,7 @@ MERMAID_VERSION = "12.3.0"
 MERMAID_URL = f"https://cdn.jsdelivr.net/npm/mermaid@{MERMAID_VERSION}/dist/mermaid.min.js"
 MERMAID_SHA256 = "336df803d87a38b70a01e736e666c8f7601d2ce42f5e47c8fafe5d721074b9a3"
 
-STATUSES = ("todo", "in progress", "done", "dropped")
+STATUSES = ("todo", "in progress", "blocked", "done", "dropped")
 POINTS = {"S": 1, "M": 2, "L": 4, "XL": 8}
 
 _MILESTONE = re.compile(r"^## M(\d+)\s*[-–—]\s*(.+)$")
@@ -261,9 +261,11 @@ def terminal_summary(data: dict) -> list[str]:
     ready = [k for k, t in tasks.items() if t["status"] == "todo"
              and all(data["tasks"].get(d, {}).get("status") == "done" for d in t["deps"])]
     doing = [k for k, t in tasks.items() if t["status"] == "in progress"]
+    blocked = [k for k, t in tasks.items() if t["status"] == "blocked"]
     return [f"Progress: {done}/{total} points ({pct}%), "
             f"{sum(t['status'] == 'done' for t in tasks.values())}/{len(tasks)} tasks done",
             f"In progress: {', '.join(doing) or '-'}",
+            f"Blocked: {', '.join(blocked) or '-'}",
             f"Ready: {', '.join(ready[:5]) or '-'}"]
 
 
