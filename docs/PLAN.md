@@ -80,7 +80,7 @@ days, edit them, delete one and undo; close and reopen the app and the data are 
 | T2.8  | Platform services: Clock adapter (now, time zone, ticks, day and time zone change) | done | M | T2.2 | - |
 | T2.9  | App: composition root, App shell with the Undo snackbar, bottom navigation bar | done | M | T2.7, T2.8 | - |
 | T2.10 | Habits screen, minimal: list and the form of a new numeric build habit | done | M | T2.3, T2.9 | REQ-M6 |
-| T2.11 | Day screen: header (arrows, calendar picker, date follows today), rows with "+", typed value and the value of the day | todo | L | T1.8, T2.4, T2.6, T2.9 | REQ-M5, REQ-M6, BHV-DAY-R1, BHV-DAY-1, BHV-DAY-2, BHV-ENTRY-2 |
+| T2.11 | Day screen: header (arrows, calendar picker, date follows today), rows with "+", typed value and the value of the day | in progress | L | T1.8, T2.4, T2.6, T2.9 | REQ-M5, REQ-M6, BHV-DAY-R1, BHV-DAY-1, BHV-DAY-2, BHV-ENTRY-2 |
 | T2.12 | Entries sheet and the numeric entry form: add, edit, delete with Undo (the snackbar on a second host inside the sheet, Decision 101), validation messages | todo | L | T2.5, T2.11 | REQ-M5 |
 
 **T2.5:** `docs/DESIGN.md` section 5.7. **T2.6:** BHV-HABIT-R4; needed by the Day
