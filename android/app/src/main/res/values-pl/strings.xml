@@ -2,4 +2,10 @@
 <resources>
     <!-- Working title until question 12 is decided (T9.3). -->
     <string name="app_name">Habit Tracker</string>
+
+    <string name="ui_nav_bar_day">Dzień</string>
+    <string name="ui_nav_bar_habits">Nawyki</string>
+
+    <string name="ui_msg_undo_entry">Wpis usunięty</string>
+    <string name="ui_msg_undo_action">Cofnij</string>
 </resources>

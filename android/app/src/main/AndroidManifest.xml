@@ -8,6 +8,7 @@
         tools:node="remove" />
 
     <application
+        android:name=".app.HabitTrackerApplication"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@drawable/ic_launcher"
