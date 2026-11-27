@@ -77,7 +77,7 @@ days, edit them, delete one and undo; close and reopen the app and the data are 
 | T2.5  | Domain: undo offer of a deleted entry, its expiry and withdrawal | done | M | T2.4 | BHV-ENTRY-R6a, BHV-ENTRY-22a, BHV-ENTRY-22b |
 | T2.6  | Domain: which habits are shown and their order (`Collator`) | done | S | T2.3 | BHV-HABIT-R4, BHV-HABIT-2, BHV-HABIT-3, BHV-HABIT-16 |
 | T2.7  | Persistence: Room with habits and entries, entries read by date range, instrumented tests (G8 included) | in progress | L | T2.2 | REQ-C2, REQ-SC1 |
-| T2.8  | Platform services: Clock adapter (now, time zone, ticks, day and time zone change) | todo | M | T2.2 | - |
+| T2.8  | Platform services: Clock adapter (now, time zone, ticks, day and time zone change) | in progress | M | T2.2 | - |
 | T2.9  | App: composition root, App shell with the Undo snackbar, bottom navigation bar | todo | M | T2.7, T2.8 | - |
 | T2.10 | Habits screen, minimal: list and the form of a new numeric build habit | todo | M | T2.3, T2.9 | REQ-M6 |
 | T2.11 | Day screen: header (arrows, calendar picker, date follows today), rows with "+", typed value and the value of the day | todo | L | T1.8, T2.4, T2.6, T2.9 | REQ-M5, REQ-M6, BHV-DAY-R1, BHV-DAY-1, BHV-DAY-2, BHV-ENTRY-2 |
