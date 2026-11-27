@@ -2,6 +2,8 @@ package kubisp.habittracker.gui.navigation
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
 import kubisp.habittracker.R
 
 /**
@@ -13,7 +15,10 @@ enum class AppTab(val route: String, @StringRes val label: Int, @DrawableRes val
     HABITS(route = "habits", label = R.string.ui_nav_bar_habits, icon = R.drawable.ic_tab_habits);
 
     companion object {
-        /** Null before the first destination is shown. */
-        fun ofRoute(route: String?): AppTab? = entries.find { it.route == route }
+        /** The tab whose route is [destination] or one of its parent graphs; null before the first destination. */
+        fun ofDestination(destination: NavDestination?): AppTab? {
+            val routes = destination?.hierarchy?.map { it.route }?.toSet() ?: return null
+            return entries.find { it.route in routes }
+        }
     }
 }

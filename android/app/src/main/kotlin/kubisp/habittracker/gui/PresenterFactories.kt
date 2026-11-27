@@ -1,6 +1,8 @@
 package kubisp.habittracker.gui
 
 import kotlinx.coroutines.CoroutineScope
+import kubisp.habittracker.presentation.habitform.HabitFormPresenter
+import kubisp.habittracker.presentation.habits.HabitsPresenter
 import kubisp.habittracker.presentation.shell.AppShellPresenter
 
 /**
@@ -9,4 +11,9 @@ import kubisp.habittracker.presentation.shell.AppShellPresenter
  */
 interface PresenterFactories {
     fun appShellPresenter(scope: CoroutineScope): AppShellPresenter
+
+    /** [languageTag]: the effective app language, read by the GUI from the current resource configuration. */
+    fun habitsPresenter(scope: CoroutineScope, languageTag: String): HabitsPresenter
+
+    fun habitFormPresenter(scope: CoroutineScope): HabitFormPresenter
 }

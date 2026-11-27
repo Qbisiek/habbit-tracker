@@ -1,8 +1,5 @@
 package kubisp.habittracker.domain.habit
 
-import kubisp.habittracker.domain.decimal.ExactDecimal
-import kubisp.habittracker.domain.fake.aNumericMeasurement
-import kubisp.habittracker.domain.fake.decimal
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -63,7 +60,7 @@ class HabitDraftValidationTest {
 
     @Test
     fun `BHV-HABIT-12 a plus step of 0 is rejected`() {
-        val draft = aDraft(plusStepSetByUser = decimal("0"))
+        val draft = aDraft(plusStep = "0")
 
         val problems = validateHabitDraft(draft)
 
@@ -72,7 +69,7 @@ class HabitDraftValidationTest {
 
     @Test
     fun `BHV-HABIT-R1 a plus step below the precision of 3 decimal places becomes 0 and is rejected`() {
-        val draft = aDraft(plusStepSetByUser = decimal("0.0004"))
+        val draft = aDraft(plusStep = "0.0004")
 
         val problems = validateHabitDraft(draft)
 
@@ -81,7 +78,7 @@ class HabitDraftValidationTest {
 
     @Test
     fun `BHV-HABIT-R1 a negative plus step is rejected`() {
-        val draft = aDraft(plusStepSetByUser = decimal("-1"))
+        val draft = aDraft(plusStep = "-1")
 
         val problems = validateHabitDraft(draft)
 
@@ -89,17 +86,35 @@ class HabitDraftValidationTest {
     }
 
     @Test
-    fun `BHV-HABIT-R1 the smallest plus step of one thousandth is valid`() {
-        val draft = aDraft(plusStepSetByUser = decimal("0.001"))
+    fun `BHV-HABIT-R1 a plus step set by the user and then emptied is rejected`() {
+        val draft = aDraft(plusStep = "")
 
         val problems = validateHabitDraft(draft)
 
-        assertEquals(emptySet<HabitDraftProblem>(), problems)
+        assertEquals(setOf(HabitDraftProblem.PlusStepNotAboveZero), problems)
+    }
+
+    @Test
+    fun `BHV-HABIT-R1 a plus step that is not a number is rejected`() {
+        val drafts = listOf(aDraft(plusStep = "abc"), aDraft(plusStep = "1.2.3"), aDraft(plusStep = ","))
+
+        val problems = drafts.map { validateHabitDraft(it) }
+
+        assertEquals(List(3) { setOf(HabitDraftProblem.PlusStepNotAboveZero) }, problems)
+    }
+
+    @Test
+    fun `BHV-HABIT-R1 a plus step of one thousandth after rounding is valid, typed with a dot or a comma`() {
+        val drafts = listOf(aDraft(plusStep = "0.001"), aDraft(plusStep = "0,001"), aDraft(plusStep = "0.0005"))
+
+        val problems = drafts.map { validateHabitDraft(it) }
+
+        assertEquals(List(3) { emptySet<HabitDraftProblem>() }, problems)
     }
 
     @Test
     fun `BHV-HABIT-R1 every broken rule of a draft is reported`() {
-        val draft = aDraft(name = " ", unit = NumericUnit.Custom(""), plusStepSetByUser = decimal("0"))
+        val draft = aDraft(name = " ", unit = NumericUnit.Custom(""), plusStep = "0")
 
         val problems = validateHabitDraft(draft)
 
@@ -114,10 +129,10 @@ class HabitDraftValidationTest {
     private fun aDraft(
         name: String = "Water",
         unit: NumericUnit = NumericUnit.BuiltIn(BuiltInUnit.LITRES),
-        plusStepSetByUser: ExactDecimal? = null
+        plusStep: String? = null
     ) = HabitDraft(
         name = name,
         direction = Direction.BUILD,
-        measurement = aNumericMeasurement(unit = unit, plusStepSetByUser = plusStepSetByUser)
+        measurement = MeasurementDraft.Numeric(unit = unit, plusStep = plusStep)
     )
 }

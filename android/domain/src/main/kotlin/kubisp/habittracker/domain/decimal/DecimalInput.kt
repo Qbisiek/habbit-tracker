@@ -14,3 +14,11 @@ fun parseDecimalInput(text: String): BigDecimal? {
     if (!decimalNumber.matches(text)) return null
     return BigDecimal(text.replace(',', '.'))
 }
+
+private val allowedDecimalInput = Regex("""\d*[.,]?\d*""")
+
+/**
+ * The input filter of a typed value, target or "+" step (`docs/UX.md` section 5): digits and at most one decimal
+ * separator, no minus sign. An edit that gives a text it does not allow is not taken, so no message is needed for it.
+ */
+fun isAllowedDecimalInput(text: String): Boolean = allowedDecimalInput.matches(text)

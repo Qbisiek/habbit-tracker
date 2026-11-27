@@ -8,4 +8,33 @@
 
     <string name="ui_msg_undo_entry">Wpis usunięty</string>
     <string name="ui_msg_undo_action">Cofnij</string>
+
+    <string name="ui_habits_title">Nawyki</string>
+    <string name="ui_habits_add">Nowy nawyk</string>
+    <string name="ui_habits_empty">Nie masz jeszcze nawyków.</string>
+
+    <string name="ui_habitform_title_new">Nowy nawyk</string>
+    <string name="ui_habitform_back">Wstecz</string>
+    <string name="ui_habitform_name">Nazwa</string>
+    <string name="ui_habitform_name_empty">Wpisz nazwę</string>
+    <string name="ui_habitform_unit">Jednostka</string>
+    <string name="ui_habitform_unit_custom">Własna jednostka</string>
+    <string name="ui_habitform_custom_unit">Nazwa jednostki</string>
+    <string name="ui_habitform_custom_unit_empty">Wpisz jednostkę</string>
+    <string name="ui_habitform_plus_step">Krok „+”</string>
+    <string name="ui_habitform_plus_step_not_above_zero">Krok musi być większy od 0</string>
+    <string name="ui_habitform_save">Zapisz</string>
+
+    <!-- Built-in units (REQ-M7, Decision 37), named by the identifiers of Domain. -->
+    <string name="unit_ml">ml</string>
+    <string name="unit_l">l</string>
+    <string name="unit_glasses">szklanki</string>
+    <string name="unit_g">g</string>
+    <string name="unit_kg">kg</string>
+    <string name="unit_km">km</string>
+    <string name="unit_steps">kroki</string>
+    <string name="unit_kcal">kcal</string>
+    <string name="unit_pages">strony</string>
+    <string name="unit_repetitions">powtórzenia</string>
+    <string name="unit_count">razy</string>
 </resources>

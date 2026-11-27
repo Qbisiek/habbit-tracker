@@ -7,6 +7,7 @@ import kotlinx.coroutines.SupervisorJob
 import kubisp.habittracker.domain.entry.EntryOperations
 import kubisp.habittracker.domain.habit.HabitOperations
 import kubisp.habittracker.domain.operation.DomainLock
+import kubisp.habittracker.domain.port.Habits
 import kubisp.habittracker.domain.undo.CurrentUndoOffer
 import kubisp.habittracker.domain.undo.UndoOperations
 import kubisp.habittracker.persistence.HabitTrackerDatabase
@@ -26,7 +27,7 @@ class AppDependencies(applicationContext: Context) {
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val database = HabitTrackerDatabase.open(applicationContext)
-    private val habits = RoomHabits(database.habitDao())
+    val habits: Habits = RoomHabits(database.habitDao())
     private val entries = RoomEntries(database)
     private val dataOperations = RoomDataOperations(database)
 

@@ -8,4 +8,33 @@
 
     <string name="ui_msg_undo_entry">Entry deleted</string>
     <string name="ui_msg_undo_action">Undo</string>
+
+    <string name="ui_habits_title">Habits</string>
+    <string name="ui_habits_add">New habit</string>
+    <string name="ui_habits_empty">No habits yet.</string>
+
+    <string name="ui_habitform_title_new">New habit</string>
+    <string name="ui_habitform_back">Back</string>
+    <string name="ui_habitform_name">Name</string>
+    <string name="ui_habitform_name_empty">Enter a name</string>
+    <string name="ui_habitform_unit">Unit</string>
+    <string name="ui_habitform_unit_custom">Custom unit</string>
+    <string name="ui_habitform_custom_unit">Unit name</string>
+    <string name="ui_habitform_custom_unit_empty">Enter a unit</string>
+    <string name="ui_habitform_plus_step">\"+\" step</string>
+    <string name="ui_habitform_plus_step_not_above_zero">Step must be above 0</string>
+    <string name="ui_habitform_save">Save</string>
+
+    <!-- Built-in units (REQ-M7, Decision 37), named by the identifiers of Domain. -->
+    <string name="unit_ml">ml</string>
+    <string name="unit_l">l</string>
+    <string name="unit_glasses">glasses</string>
+    <string name="unit_g">g</string>
+    <string name="unit_kg">kg</string>
+    <string name="unit_km">km</string>
+    <string name="unit_steps">steps</string>
+    <string name="unit_kcal">kcal</string>
+    <string name="unit_pages">pages</string>
+    <string name="unit_repetitions">repetitions</string>
+    <string name="unit_count">count</string>
 </resources>

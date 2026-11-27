@@ -12,8 +12,10 @@ import kubisp.habittracker.gui.shell.AppShellScreen
 import kubisp.habittracker.gui.shell.AppShellViewModel
 
 class MainActivity : ComponentActivity() {
+    private val factories: PresenterFactories get() = application as PresenterFactories
+
     private val shell: AppShellViewModel by viewModels {
-        viewModelFactory { initializer { AppShellViewModel(application as PresenterFactories) } }
+        viewModelFactory { initializer { AppShellViewModel(factories) } }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,7 +23,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MaterialTheme {
-                AppShellScreen(shell)
+                AppShellScreen(shell, factories)
             }
         }
     }

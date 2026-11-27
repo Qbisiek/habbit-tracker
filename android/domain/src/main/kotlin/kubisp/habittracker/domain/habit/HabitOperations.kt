@@ -13,11 +13,11 @@ class HabitOperations(
     private val dataOperations: DataOperations,
     private val clock: Clock
 ) {
-    suspend fun createHabit(draft: HabitDraft): CreateHabitResult {
-        val problems = validateHabitDraft(draft)
-        if (problems.isNotEmpty()) return CreateHabitResult.Rejected(problems)
-        return lock.withLock {
-            val habit = newHabit(draft, createdAt = wallClockNow())
+    suspend fun createHabit(draft: HabitDraft): CreateHabitResult = when (val checked = checkHabitDraft(draft)) {
+        is CheckedHabitDraft.Invalid -> CreateHabitResult.Rejected(checked.problems)
+
+        is CheckedHabitDraft.Valid -> lock.withLock {
+            val habit = newHabit(draft, checked.measurement, createdAt = wallClockNow())
             dataOperations.saveHabit(habit)
             CreateHabitResult.Created(habit)
         }
@@ -27,11 +27,11 @@ class HabitOperations(
         LocalDateTime.ofInstant(clock.now(), clock.timeZone()).truncatedTo(ChronoUnit.SECONDS)
 }
 
-private fun newHabit(draft: HabitDraft, createdAt: LocalDateTime): Habit = Habit(
+private fun newHabit(draft: HabitDraft, measurement: Measurement, createdAt: LocalDateTime): Habit = Habit(
     id = HabitId(UUID.randomUUID()),
     name = draft.name.trim(),
     direction = draft.direction,
-    measurement = draft.measurement.withTrimmedLabels(),
+    measurement = measurement.withTrimmedLabels(),
     createdAt = createdAt,
     archivedOn = null
 )

@@ -36,4 +36,22 @@ class DecimalInputTest {
 
         assertEquals(inputs.map { null }, values)
     }
+
+    @Test
+    fun `the input filter lets through digits with at most one comma or dot, also an empty or unfinished number`() {
+        val inputs = listOf("", "0", "250", "0,25", "0.25", ",", ".5", "5.")
+
+        val allowed = inputs.map { isAllowedDecimalInput(it) }
+
+        assertEquals(inputs.map { true }, allowed)
+    }
+
+    @Test
+    fun `the input filter stops a minus sign, a second separator, letters, spaces and grouping`() {
+        val inputs = listOf("-", "-1", "1,2,3", "1.2,3", "1e3", "1 000", "abc", "+1", " 1")
+
+        val allowed = inputs.map { isAllowedDecimalInput(it) }
+
+        assertEquals(inputs.map { false }, allowed)
+    }
 }

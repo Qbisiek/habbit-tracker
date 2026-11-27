@@ -19,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import kubisp.habittracker.R
+import kubisp.habittracker.gui.PresenterFactories
 import kubisp.habittracker.gui.navigation.AppNavHost
 import kubisp.habittracker.gui.navigation.AppNavigationBar
 import kubisp.habittracker.gui.navigation.AppTab
@@ -28,16 +29,16 @@ import kubisp.habittracker.presentation.shell.AppShellState
 import kubisp.habittracker.presentation.shell.ShellSnackbar
 
 @Composable
-fun AppShellScreen(holder: AppShellViewModel) {
+fun AppShellScreen(holder: AppShellViewModel, factories: PresenterFactories) {
     val state by holder.presenter.state.collectAsStateWithLifecycle()
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     AppShellContent(
         state = state,
         onAction = holder.presenter::onAction,
-        selectedTab = AppTab.ofRoute(backStackEntry?.destination?.route),
+        selectedTab = AppTab.ofDestination(backStackEntry?.destination),
         onTabSelected = navController::openTab
-    ) { contentPadding -> AppNavHost(navController, contentPadding) }
+    ) { contentPadding -> AppNavHost(navController, factories, contentPadding) }
 }
 
 /** The frame of every screen: the navigation bar (UI-NAV-BAR) and the snackbar host of the App shell above it. */

@@ -31,7 +31,7 @@ class HabitOperationsTest {
     @Test
     fun `BHV-HABIT-R1 a valid draft creates a not archived habit with the direction and measurement of the draft`() =
         runTest {
-            val measurement = aNumericMeasurement(NumericUnit.BuiltIn(BuiltInUnit.MILLILITRES), decimal("500"))
+            val measurement = MeasurementDraft.Numeric(NumericUnit.BuiltIn(BuiltInUnit.MILLILITRES), plusStep = "500")
             val draft = aDraft(name = "Water", direction = Direction.QUIT, measurement = measurement)
 
             val result = operations.createHabit(draft)
@@ -39,7 +39,7 @@ class HabitOperationsTest {
             val habit = createdHabit(result)
             assertEquals("Water", habit.name)
             assertEquals(Direction.QUIT, habit.direction)
-            assertEquals(measurement, habit.measurement)
+            assertEquals(aNumericMeasurement(measurement.unit, decimal("500")), habit.measurement)
             assertNull(habit.archivedOn)
             assertEquals(listOf(habit), storage.habits().first())
         }
@@ -47,7 +47,7 @@ class HabitOperationsTest {
     @Test
     fun `BHV-HABIT-R1 without a step set by the user the habit stores no step and uses the default of the unit`() =
         runTest {
-            val draft = aDraft(measurement = aNumericMeasurement(NumericUnit.BuiltIn(BuiltInUnit.LITRES), null))
+            val draft = aDraft(measurement = MeasurementDraft.Numeric(NumericUnit.BuiltIn(BuiltInUnit.LITRES), null))
 
             val result = operations.createHabit(draft)
 
@@ -55,6 +55,16 @@ class HabitOperationsTest {
             assertNull(measurement.plusStepSetByUser)
             assertEquals(decimal("0.25"), measurement.plusStep)
         }
+
+    @Test
+    fun `BHV-HABIT-R1 a typed plus step is stored as an exact decimal rounded to 3 decimal places`() = runTest {
+        val draft = aDraft(measurement = aMeasurementDraft(plusStep = "0,3335"))
+
+        val result = operations.createHabit(draft)
+
+        val measurement = createdHabit(result).measurement as Measurement.Numeric
+        assertEquals(decimal("0.334"), measurement.plusStepSetByUser)
+    }
 
     @Test
     fun `BHV-HABIT-R1 the creation day and time is now on the wall clock of the time zone of the clock`() = runTest {
@@ -67,7 +77,7 @@ class HabitOperationsTest {
 
     @Test
     fun `BHV-HABIT-R1 the name and the custom unit are stored without the white space around them`() = runTest {
-        val draft = aDraft(name = "  Tea ", measurement = aNumericMeasurement(NumericUnit.Custom(" cups  "), null))
+        val draft = aDraft(name = "  Tea ", measurement = MeasurementDraft.Numeric(NumericUnit.Custom(" cups  "), null))
 
         val result = operations.createHabit(draft)
 
@@ -100,7 +110,7 @@ class HabitOperationsTest {
 
     @Test
     fun `BHV-HABIT-11 a custom unit of only spaces is rejected and the habit is not created`() = runTest {
-        val draft = aDraft(measurement = aNumericMeasurement(NumericUnit.Custom("   "), null))
+        val draft = aDraft(measurement = MeasurementDraft.Numeric(NumericUnit.Custom("   "), null))
 
         val result = operations.createHabit(draft)
 
@@ -110,7 +120,7 @@ class HabitOperationsTest {
 
     @Test
     fun `BHV-HABIT-12 a plus step of 0 is rejected and the habit is not created`() = runTest {
-        val draft = aDraft(measurement = aNumericMeasurement(plusStepSetByUser = decimal("0")))
+        val draft = aDraft(measurement = aMeasurementDraft(plusStep = "0"))
 
         val result = operations.createHabit(draft)
 
@@ -142,6 +152,9 @@ class HabitOperationsTest {
     private fun aDraft(
         name: String = "Water",
         direction: Direction = Direction.BUILD,
-        measurement: Measurement = aNumericMeasurement()
+        measurement: MeasurementDraft = aMeasurementDraft()
     ) = HabitDraft(name = name, direction = direction, measurement = measurement)
+
+    private fun aMeasurementDraft(plusStep: String? = null) =
+        MeasurementDraft.Numeric(NumericUnit.BuiltIn(BuiltInUnit.LITRES), plusStep)
 }

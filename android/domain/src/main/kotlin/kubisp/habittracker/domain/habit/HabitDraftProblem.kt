@@ -6,5 +6,6 @@ sealed interface HabitDraftProblem {
 
     data object CustomUnitEmpty : HabitDraftProblem
 
+    /** A step set by the user that is empty, not a number, 0 or less, or 0 after rounding to 3 decimal places. */
     data object PlusStepNotAboveZero : HabitDraftProblem
 }
