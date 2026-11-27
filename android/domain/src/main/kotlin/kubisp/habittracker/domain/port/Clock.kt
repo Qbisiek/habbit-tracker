@@ -14,7 +14,10 @@ interface Clock {
     /** Emits the current instant every second, only while it has a subscriber. */
     fun ticks(): Flow<Instant>
 
-    /** Emits when the calendar day or the time zone changes. */
+    /**
+     * Emits when the calendar day or the time zone changes after the subscription; a change while nothing collects is
+     * not signalled, so a subscriber computes "today" again whenever it subscribes.
+     */
     fun dayOrTimeZoneChanges(): Flow<Unit>
 
     /**

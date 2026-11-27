@@ -47,6 +47,8 @@ dependencies {
     ksp(libs.room.compiler)
 
     testImplementation(libs.junit4)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
 
     androidTestImplementation(testFixtures(project(":domain")))
     androidTestImplementation(libs.junit4)
