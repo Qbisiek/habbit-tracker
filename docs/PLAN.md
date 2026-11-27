@@ -75,7 +75,7 @@ days, edit them, delete one and undo; close and reopen the app and the data are 
 | T2.3  | Domain: create a habit and its validation (name, unit, "+" step) | done | S | T2.2 | REQ-M6, BHV-HABIT-R1, BHV-HABIT-1, BHV-HABIT-11, BHV-HABIT-12 |
 | T2.4  | Domain: numeric entries (add with "+" and typed, edit, delete), validation, default moment, value of a day | in progress | L | T2.2 | REQ-M5, BHV-ENTRY-R1, BHV-ENTRY-R2, BHV-ENTRY-R3, BHV-ENTRY-R4, BHV-ENTRY-R5, BHV-ENTRY-R6, BHV-ENTRY-R6b, BHV-ENTRY-R8, BHV-ENTRY-4, BHV-ENTRY-9a, BHV-ENTRY-9b, BHV-ENTRY-9c, BHV-ENTRY-9d, BHV-ENTRY-10, BHV-ENTRY-11, BHV-ENTRY-12a, BHV-ENTRY-12b, BHV-ENTRY-16, BHV-ENTRY-17, BHV-ENTRY-18, BHV-ENTRY-20, BHV-ENTRY-21a, BHV-ENTRY-21b, BHV-ENTRY-21c, BHV-ENTRY-21d |
 | T2.5  | Domain: undo offer of a deleted entry, its expiry and withdrawal | todo | M | T2.4 | BHV-ENTRY-R6a, BHV-ENTRY-22a, BHV-ENTRY-22b |
-| T2.6  | Domain: which habits are shown and their order (`Collator`) | todo | S | T2.3 | BHV-HABIT-R4, BHV-HABIT-2, BHV-HABIT-3, BHV-HABIT-16 |
+| T2.6  | Domain: which habits are shown and their order (`Collator`) | in progress | S | T2.3 | BHV-HABIT-R4, BHV-HABIT-2, BHV-HABIT-3, BHV-HABIT-16 |
 | T2.7  | Persistence: Room with habits and entries, entries read by date range, instrumented tests (G8 included) | todo | L | T2.2 | REQ-C2, REQ-SC1 |
 | T2.8  | Platform services: Clock adapter (now, time zone, ticks, day and time zone change) | todo | M | T2.2 | - |
 | T2.9  | App: composition root, App shell with the Undo snackbar, bottom navigation bar | todo | M | T2.7, T2.8 | - |
