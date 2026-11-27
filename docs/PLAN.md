@@ -70,7 +70,7 @@ days, edit them, delete one and undo; close and reopen the app and the data are 
 
 | ID    | Task | Status | Effort | Depends on | Covers |
 |-------|------|--------|--------|------------|--------|
-| T2.1  | Domain: numeric habit and entry model, exact decimals, built-in units with default steps, custom unit | todo | M | T1.2 | REQ-M7, REQ-S2, BHV-HABIT-14 |
+| T2.1  | Domain: numeric habit and entry model, exact decimals, built-in units with default steps, custom unit | in progress | M | T1.2 | REQ-M7, REQ-S2, BHV-HABIT-14 |
 | T2.2  | Domain: ports (Habits, Entries, Data operations, Clock), Domain operations skeleton with the lock, hand-written fakes for tests | todo | M | T2.1 | - |
 | T2.3  | Domain: create a habit and its validation (name, unit, "+" step) | todo | S | T2.2 | REQ-M6, BHV-HABIT-R1, BHV-HABIT-1, BHV-HABIT-11, BHV-HABIT-12 |
 | T2.4  | Domain: numeric entries (add with "+" and typed, edit, delete), validation, default moment, value of a day | todo | L | T2.2 | REQ-M5, BHV-ENTRY-R1, BHV-ENTRY-R2, BHV-ENTRY-R3, BHV-ENTRY-R4, BHV-ENTRY-R5, BHV-ENTRY-R6, BHV-ENTRY-R6b, BHV-ENTRY-R8, BHV-ENTRY-4, BHV-ENTRY-9a, BHV-ENTRY-9b, BHV-ENTRY-9c, BHV-ENTRY-9d, BHV-ENTRY-10, BHV-ENTRY-11, BHV-ENTRY-12a, BHV-ENTRY-12b, BHV-ENTRY-16, BHV-ENTRY-17, BHV-ENTRY-18, BHV-ENTRY-20, BHV-ENTRY-21a, BHV-ENTRY-21b, BHV-ENTRY-21c, BHV-ENTRY-21d |
