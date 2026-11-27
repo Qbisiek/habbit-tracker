@@ -7,6 +7,8 @@ import kotlinx.coroutines.SupervisorJob
 import kubisp.habittracker.domain.entry.EntryOperations
 import kubisp.habittracker.domain.habit.HabitOperations
 import kubisp.habittracker.domain.operation.DomainLock
+import kubisp.habittracker.domain.port.Clock
+import kubisp.habittracker.domain.port.Entries
 import kubisp.habittracker.domain.port.Habits
 import kubisp.habittracker.domain.undo.CurrentUndoOffer
 import kubisp.habittracker.domain.undo.UndoOperations
@@ -28,11 +30,11 @@ class AppDependencies(applicationContext: Context) {
 
     private val database = HabitTrackerDatabase.open(applicationContext)
     val habits: Habits = RoomHabits(database.habitDao())
-    private val entries = RoomEntries(database)
+    val entries: Entries = RoomEntries(database)
     private val dataOperations = RoomDataOperations(database)
 
     // Each collector of the day or time zone changes registers its own receiver; only the screens on show collect it.
-    private val clock = DeviceClock(systemTimeChanges(applicationContext))
+    val clock: Clock = DeviceClock(systemTimeChanges(applicationContext))
 
     private val lock = DomainLock()
     private val currentUndoOffer = CurrentUndoOffer(lock, clock, applicationScope)

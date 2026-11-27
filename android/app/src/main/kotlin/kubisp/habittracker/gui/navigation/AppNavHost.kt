@@ -14,6 +14,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import kubisp.habittracker.gui.PresenterFactories
+import kubisp.habittracker.gui.day.DayScreen
+import kubisp.habittracker.gui.day.DayViewModel
 import kubisp.habittracker.gui.habitform.HabitFormScreen
 import kubisp.habittracker.gui.habitform.HabitFormViewModel
 import kubisp.habittracker.gui.habits.HabitsScreen
@@ -23,8 +25,8 @@ private const val HABIT_LIST_ROUTE = "habits/list"
 private const val NEW_HABIT_ROUTE = "habits/new"
 
 /**
- * The destinations of the tabs; the Day screen comes in T2.11. The Habits tab is a nested graph, so the tab stays
- * selected and keeps its back stack while the form is open.
+ * The destinations of the tabs. The Habits tab is a nested graph, so the tab stays selected and keeps its back stack
+ * while the form is open.
  */
 @Composable
 fun AppNavHost(navController: NavHostController, factories: PresenterFactories, contentPadding: PaddingValues) {
@@ -34,7 +36,16 @@ fun AppNavHost(navController: NavHostController, factories: PresenterFactories, 
         // Consumed, so the top bars and the keyboard padding of the screens do not add the system bars again.
         modifier = Modifier.fillMaxSize().padding(contentPadding).consumeWindowInsets(contentPadding)
     ) {
-        composable(AppTab.DAY.route) {}
+        composable(AppTab.DAY.route) {
+            DayDestination(
+                factories,
+                onCreateHabit = {
+                    navController.openTab(AppTab.HABITS)
+                    navController.navigate(NEW_HABIT_ROUTE) { launchSingleTop = true }
+                },
+                onGoToHabits = { navController.openTab(AppTab.HABITS) }
+            )
+        }
         navigation(startDestination = HABIT_LIST_ROUTE, route = AppTab.HABITS.route) {
             composable(HABIT_LIST_ROUTE) {
                 HabitListDestination(factories, onAddHabit = { navController.navigate(NEW_HABIT_ROUTE) })
@@ -44,6 +55,13 @@ fun AppNavHost(navController: NavHostController, factories: PresenterFactories, 
             }
         }
     }
+}
+
+@Composable
+private fun DayDestination(factories: PresenterFactories, onCreateHabit: () -> Unit, onGoToHabits: () -> Unit) {
+    val languageTag = LocalConfiguration.current.locales[0].toLanguageTag()
+    val holder = viewModel { DayViewModel(factories, languageTag) }
+    DayScreen(holder, onCreateHabit, onGoToHabits)
 }
 
 @Composable

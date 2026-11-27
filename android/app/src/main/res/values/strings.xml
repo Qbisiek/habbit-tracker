@@ -9,6 +9,22 @@
     <string name="ui_msg_undo_entry">Entry deleted</string>
     <string name="ui_msg_undo_action">Undo</string>
 
+    <string name="ui_day_header_previous">Previous day</string>
+    <string name="ui_day_header_next">Next day</string>
+    <string name="ui_day_picker_open">Choose a date</string>
+    <string name="ui_day_picker_ok">OK</string>
+    <string name="ui_day_picker_cancel">Cancel</string>
+    <string name="ui_day_action_plus">Add one step to %1$s</string>
+    <string name="ui_day_action_type">Type a value of %1$s</string>
+    <string name="ui_day_empty_none">No habits yet.</string>
+    <string name="ui_day_empty_none_button">Create a habit</string>
+    <string name="ui_day_empty_archived">All habits are archived.</string>
+    <string name="ui_day_empty_archived_button">Go to Habits</string>
+
+    <string name="ui_entryform_numeric_value">Value</string>
+    <string name="ui_entryform_save">Save</string>
+    <string name="ui_entryform_cancel">Cancel</string>
+
     <string name="ui_habits_title">Habits</string>
     <string name="ui_habits_add">New habit</string>
     <string name="ui_habits_empty">No habits yet.</string>
@@ -37,4 +53,22 @@
     <string name="unit_pages">pages</string>
     <string name="unit_repetitions">repetitions</string>
     <string name="unit_count">count</string>
+
+    <!--
+        A value with its unit (UI-DAY-VALUE), as ICU MessageFormat patterns: {0} is the value, {1} the label of a
+        custom unit. The plural form is chosen for the decimal value as it is shown ("0,5 szklanki"), which Android
+        plurals cannot do, since they choose by an integer.
+    -->
+    <string name="unit_value_ml">{0,number} ml</string>
+    <string name="unit_value_l">{0,number} l</string>
+    <string name="unit_value_glasses">{0,plural, one{# glass} other{# glasses}}</string>
+    <string name="unit_value_g">{0,number} g</string>
+    <string name="unit_value_kg">{0,number} kg</string>
+    <string name="unit_value_km">{0,number} km</string>
+    <string name="unit_value_steps">{0,plural, one{# step} other{# steps}}</string>
+    <string name="unit_value_kcal">{0,number} kcal</string>
+    <string name="unit_value_pages">{0,plural, one{# page} other{# pages}}</string>
+    <string name="unit_value_repetitions">{0,plural, one{# repetition} other{# repetitions}}</string>
+    <string name="unit_value_count">{0,plural, one{# time} other{# times}}</string>
+    <string name="unit_value_custom">{0,number} {1}</string>
 </resources>

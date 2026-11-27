@@ -9,6 +9,22 @@
     <string name="ui_msg_undo_entry">Wpis usunięty</string>
     <string name="ui_msg_undo_action">Cofnij</string>
 
+    <string name="ui_day_header_previous">Poprzedni dzień</string>
+    <string name="ui_day_header_next">Następny dzień</string>
+    <string name="ui_day_picker_open">Wybierz datę</string>
+    <string name="ui_day_picker_ok">OK</string>
+    <string name="ui_day_picker_cancel">Anuluj</string>
+    <string name="ui_day_action_plus">Dodaj krok: %1$s</string>
+    <string name="ui_day_action_type">Wpisz wartość: %1$s</string>
+    <string name="ui_day_empty_none">Nie masz jeszcze nawyków.</string>
+    <string name="ui_day_empty_none_button">Utwórz nawyk</string>
+    <string name="ui_day_empty_archived">Wszystkie nawyki są zarchiwizowane.</string>
+    <string name="ui_day_empty_archived_button">Przejdź do nawyków</string>
+
+    <string name="ui_entryform_numeric_value">Wartość</string>
+    <string name="ui_entryform_save">Zapisz</string>
+    <string name="ui_entryform_cancel">Anuluj</string>
+
     <string name="ui_habits_title">Nawyki</string>
     <string name="ui_habits_add">Nowy nawyk</string>
     <string name="ui_habits_empty">Nie masz jeszcze nawyków.</string>
@@ -37,4 +53,22 @@
     <string name="unit_pages">strony</string>
     <string name="unit_repetitions">powtórzenia</string>
     <string name="unit_count">razy</string>
+
+    <!--
+        A value with its unit (UI-DAY-VALUE), as ICU MessageFormat patterns: {0} is the value, {1} the label of a
+        custom unit. The plural form is chosen for the decimal value as it is shown ("0,5 szklanki"), which Android
+        plurals cannot do, since they choose by an integer.
+    -->
+    <string name="unit_value_ml">{0,number} ml</string>
+    <string name="unit_value_l">{0,number} l</string>
+    <string name="unit_value_glasses">{0,plural, one{# szklanka} few{# szklanki} many{# szklanek} other{# szklanki}}</string>
+    <string name="unit_value_g">{0,number} g</string>
+    <string name="unit_value_kg">{0,number} kg</string>
+    <string name="unit_value_km">{0,number} km</string>
+    <string name="unit_value_steps">{0,plural, one{# krok} few{# kroki} many{# kroków} other{# kroku}}</string>
+    <string name="unit_value_kcal">{0,number} kcal</string>
+    <string name="unit_value_pages">{0,plural, one{# strona} few{# strony} many{# stron} other{# strony}}</string>
+    <string name="unit_value_repetitions">{0,plural, one{# powtórzenie} few{# powtórzenia} many{# powtórzeń} other{# powtórzenia}}</string>
+    <string name="unit_value_count">{0,plural, one{# raz} few{# razy} many{# razy} other{# raza}}</string>
+    <string name="unit_value_custom">{0,number} {1}</string>
 </resources>

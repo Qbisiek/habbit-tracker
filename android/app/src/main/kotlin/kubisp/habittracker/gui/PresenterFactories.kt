@@ -1,6 +1,7 @@
 package kubisp.habittracker.gui
 
 import kotlinx.coroutines.CoroutineScope
+import kubisp.habittracker.presentation.day.DayPresenter
 import kubisp.habittracker.presentation.habitform.HabitFormPresenter
 import kubisp.habittracker.presentation.habits.HabitsPresenter
 import kubisp.habittracker.presentation.shell.AppShellPresenter
@@ -16,4 +17,7 @@ interface PresenterFactories {
     fun habitsPresenter(scope: CoroutineScope, languageTag: String): HabitsPresenter
 
     fun habitFormPresenter(scope: CoroutineScope): HabitFormPresenter
+
+    /** [languageTag]: as for [habitsPresenter]. */
+    fun dayPresenter(scope: CoroutineScope, languageTag: String): DayPresenter
 }

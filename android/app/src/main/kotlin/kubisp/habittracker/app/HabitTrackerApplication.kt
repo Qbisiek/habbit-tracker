@@ -3,6 +3,8 @@ package kubisp.habittracker.app
 import android.app.Application
 import kotlinx.coroutines.CoroutineScope
 import kubisp.habittracker.gui.PresenterFactories
+import kubisp.habittracker.presentation.day.DayPresenter
+import kubisp.habittracker.presentation.entryform.NumericEntryFormPresenter
 import kubisp.habittracker.presentation.habitform.HabitFormPresenter
 import kubisp.habittracker.presentation.habits.HabitsPresenter
 import kubisp.habittracker.presentation.shell.AppShellPresenter
@@ -21,4 +23,14 @@ class HabitTrackerApplication :
 
     override fun habitFormPresenter(scope: CoroutineScope): HabitFormPresenter =
         HabitFormPresenter(dependencies.habitOperations, scope)
+
+    override fun dayPresenter(scope: CoroutineScope, languageTag: String): DayPresenter = DayPresenter(
+        habits = dependencies.habits,
+        entries = dependencies.entries,
+        entryOperations = dependencies.entryOperations,
+        clock = dependencies.clock,
+        numericEntryForm = NumericEntryFormPresenter(dependencies.entryOperations, dependencies.clock, scope),
+        languageTag = languageTag,
+        scope = scope
+    )
 }
